@@ -3,19 +3,11 @@
  */
 package ngavax.app;
 
-import ngavax.list.LinkedList;
-
-import static ngavax.utilities.StringUtils.join;
-import static ngavax.utilities.StringUtils.split;
-import static ngavax.app.MessageUtils.getMessage;
-
-import org.apache.commons.text.WordUtils;
+import static ngavax.app.MessageUtils.*;
 
 public class App {
     public static void main(String[] args) {
-        LinkedList tokens;
-        tokens = split(getMessage());
-        String result = join(tokens);
-        System.out.println(WordUtils.capitalize(result));
+        System.out.println(getMessage());
+        System.out.println(getOtherMessage());
     }
 }

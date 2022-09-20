@@ -5,6 +5,9 @@ package ngavax.app;
 
 class MessageUtils {
     public static String getMessage() {
-        return "Hello      World!";
+        return "Hello World!";
+    }
+    public static String getOtherMessage() {
+        return "Hello Other World!";
     }
 }

@@ -8,4 +8,4 @@
  */
 
 rootProject.name = "ngavax"
-include("app", "list", "utilities")
+include("app")
