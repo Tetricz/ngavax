@@ -20,14 +20,7 @@ Unix Dependency script
 
 ### Powershell scripts for Windows dependencies
 
-Install Chocolatey (Powershell) Run `Get-ExecutionPolicy`.  
-If it returns Restricted, then run
-
-```powershell
-Set-ExecutionPolicy Bypass -Scope Process
-```
-
-Then run,
+Install Chocolatey (Powershell)
 
 ```powershell
 Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
