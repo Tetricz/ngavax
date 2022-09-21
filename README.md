@@ -24,4 +24,4 @@ Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManage
 
 * Dante
 * David Daniels
-* Kamden
+* Kamden Burke
