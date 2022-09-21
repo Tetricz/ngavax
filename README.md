@@ -24,7 +24,7 @@ Install Chocolatey (Powershell) Run `Get-ExecutionPolicy`.
 If it returns Restricted, then run
 
 ```powershell
-Set-ExecutionPolicy AllSigned or Set-ExecutionPolicy Bypass -Scope Process
+Set-ExecutionPolicy Bypass -Scope Process
 ```
 
 Then run,
