@@ -44,7 +44,7 @@ Ports can be specified in the config file.
 ### Response Handler
 
 Sends response back to the client. Modify's HEADERS if needed. (I think this handles certificate verification as well)
-Ports to send response, I think are in the HEADERS.
+Ports to send response (I think) are in the HEADERS.
 
 ### Proxy and caching
 
