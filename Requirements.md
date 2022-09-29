@@ -73,60 +73,55 @@ Example:
 
 ```json
 [
-  {
-    '4353.uh.edu': {
-      //Comments are made with "//" These lines will be ignored
-      includes: [
-        '/path/to/other/config.json',
-        '/path/to/other/config.json'
-      ],
-      listen: [
-        80,
-        443
-      ],
-      //This is an example of a way for us to setup user variables
-      env_vars: [
-        var1 = 80,
-        var2 = 123123
-      ],
-      
-      //If proxy use the proxy_pass
-      proxy_pass: 'http://localserver.tld:${var1}',
-      
-      //Whenever you want to listen on a subdomain of a server in the config, it must be nested within the server
-      //Example:
-      
-      '*.4353.uh.edu': {
-        listen: [
-          80,
-          443
-        ],
-        serve: '/home/ngavax/html/404.html'
-      }
-    },
-    'uh.edu': {
-      listen: [
-        80,
-        443
-      ],
-      
-      locations: {
-        '/': {
-          //This will server will listen on / index.html inside the html directory, then allow any other files to be accessed.
-          //If a file does not exist, it will then server a 404.html if it exists or just 404
-          serve: '/home/uh.edu/html/'
+    {
+        "4353.uh.edu": {
+            //includes is a keyword for adding other json config files
+            "includes": [
+                "/path/to/other/config.json",
+                "/path/to/other/config.json"
+            ],
+            "listen": [
+                80,
+                443
+            ],
+
+            //This is an example of a way for us to setup user variables
+            "env_vars": [
+                "SOME_VAR=foo",
+                "SOME_OTHER_VAR=bar"
+            ],
+            "proxy_pass": "http://localserver.tld:${var1}",
+
+            //Whenever you want to listen on a subdomain of a server in the config, it must be nested within the server
+            //Example:
+            "*.4353.uh.edu": {
+                "listen": [
+                    80,
+                    443
+                ],
+                "serve": "/home/ngavax/html/404.html"
+            }
         },
-        
-        '/openftp': {
-          serve: '/home/uh.edu/ftp/',
-          autoindex: true
-        },
-        
-        '/proxy': {
-          proxy_pass: '192.168.1.55:80'
+        "notuh.edu": {
+            "listen": [
+                80,
+                443
+            ],
+            //locations is a keyword to listen for subdirectory requests. "/" listens for index.html inside the html directory, then allow any other files to be accessed.
+            //If a file does not exist, it will then server a 404.html if it exists or just 404
+            "locations": {
+                "/": {
+                    "serve": "/home/uh.edu/html/"
+                },
+                "/openftp": {
+                    "serve": "/home/uh.edu/ftp/",
+                    "autoindex": true
+                },
+                "/proxy": {
+                    "proxy_pass": "192.168.1.55:80"
+                }
+            }
         }
-      }
     }
-  }
 ]
 ```
