@@ -6,8 +6,15 @@ plugins {
     id("ngavax.java-application-conventions")
 }
 
+
+repositories {
+    mavenCentral()
+}
+
 dependencies {
     implementation("org.apache.commons:commons-text")
+    implementation("org.json:json:+")
+    implementation("com.google.code.gson:gson:+")
 }
 
 application {
