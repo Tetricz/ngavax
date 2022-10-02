@@ -74,7 +74,13 @@ Example:
 ```json
 [
     {
-        "4353.uh.edu": {
+        "domains": [
+            "4353.uh.edu",
+            "*.4353.uh.edu",
+            "uh.edu"
+        ],
+        "1":{
+            "name": "4353.uh.edu",
             //includes is a keyword for adding other json config files
             "includes": [
                 "/path/to/other/config.json",
@@ -84,17 +90,16 @@ Example:
                 80,
                 443
             ],
-
             //This is an example of a way for us to setup user variables
             "env_vars": [
                 "SOME_VAR=foo",
                 "SOME_OTHER_VAR=bar"
             ],
             "proxy_pass": "http://localserver.tld:${var1}",
-
             //Whenever you want to listen on a subdomain of a server in the config, it must be nested within the server
             //Example:
-            "*.4353.uh.edu": {
+            "subdomain": {
+                "name": "*.4353.uh.edu",
                 "listen": [
                     80,
                     443
@@ -102,7 +107,8 @@ Example:
                 "serve": "/home/ngavax/html/404.html"
             }
         },
-        "notuh.edu": {
+        "2": {
+            "name": "uh.edu",
             "listen": [
                 80,
                 443

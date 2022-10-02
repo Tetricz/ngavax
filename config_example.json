@@ -1,6 +1,12 @@
 [
     {
-        "4353.uh.edu": {
+        "domains": [
+            "4353.uh.edu",
+            "*.4353.uh.edu",
+            "uh.edu"
+        ],
+        "1":{
+            "name": "4353.uh.edu",
             "includes": [
                 "/path/to/other/config.json",
                 "/path/to/other/config.json"
@@ -14,7 +20,8 @@
                 "SOME_OTHER_VAR=bar"
             ],
             "proxy_pass": "http://localserver.tld:${var1}",
-            "*.4353.uh.edu": {
+            "subdomain": {
+                "name": "*.4353.uh.edu",
                 "listen": [
                     80,
                     443
@@ -22,7 +29,8 @@
                 "serve": "/home/ngavax/html/404.html"
             }
         },
-        "notuh.edu": {
+        "2": {
+            "name": "uh.edu",
             "listen": [
                 80,
                 443
