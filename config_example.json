@@ -1,0 +1,52 @@
+[
+    {
+        "domains": [
+            "4353.uh.edu",
+            "*.4353.uh.edu",
+            "uh.edu"
+        ],
+        "1":{
+            "name": "4353.uh.edu",
+            "includes": [
+                "/path/to/other/config.json",
+                "/path/to/other/config.json"
+            ],
+            "listen": [
+                80,
+                443
+            ],
+            "env_vars": [
+                "SOME_VAR=foo",
+                "SOME_OTHER_VAR=bar"
+            ],
+            "proxy_pass": "http://localserver.tld:${var1}",
+            "subdomain": {
+                "name": "*.4353.uh.edu",
+                "listen": [
+                    80,
+                    443
+                ],
+                "serve": "/home/ngavax/html/404.html"
+            }
+        },
+        "2": {
+            "name": "uh.edu",
+            "listen": [
+                80,
+                443
+            ],
+            "locations": {
+                "/": {
+                    "serve": "/home/uh.edu/html/"
+                },
+                "/openftp": {
+                    "serve": "/home/uh.edu/ftp/",
+                    "autoindex": true
+                },
+                "/proxy": {
+                    "proxy_pass": "192.168.1.55:80"
+                }
+            }
+        }
+    }
+]

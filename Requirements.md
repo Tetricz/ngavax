@@ -3,13 +3,14 @@
 ## Core functionality Goals
 
 * [ ] Multi-threaded workload
-* [ ] HTTP Proxy and caching server
+* [ ] HTTP Proxy
 * [ ] Serve static files and autoindex files
 
 ## Other Core functionality if we have the time
 
 * [ ] TCP Load balancing
 * [ ] SSL Verifcation
+* [ ] Caching(inside proxy handler)
 
 ## Other possible goals
 
@@ -29,7 +30,7 @@
 
 ### Multi-Threading
 
-These are all their own threads.
+These are all on their own threads.
 
 * [ ] Request handler
 * [ ] Response handler
@@ -63,3 +64,70 @@ Autoindexing will be done by having a generated html file with all the files in 
 ### TCP Load balancing
 
 TODO
+
+### Config File
+
+Default file is a server.json file in the same directory as the executable. The config file will be in JSON format. The config file will be read and parsed on startup. If the config file is not found, the application will exit with code (-1). If the config file is not in JSON format, the application will exit with code (-1).
+
+Example:
+
+```json
+[
+    {
+        "domains": [
+            "4353.uh.edu",
+            "*.4353.uh.edu",
+            "uh.edu"
+        ],
+        "1":{
+            "name": "4353.uh.edu",
+            //includes is a keyword for adding other json config files
+            "includes": [
+                "/path/to/other/config.json",
+                "/path/to/other/config.json"
+            ],
+            "listen": [
+                80,
+                443
+            ],
+            //This is an example of a way for us to setup user variables
+            "env_vars": [
+                "SOME_VAR=foo",
+                "SOME_OTHER_VAR=bar"
+            ],
+            "proxy_pass": "http://localserver.tld:${var1}",
+            //Whenever you want to listen on a subdomain of a server in the config, it must be nested within the server
+            //Example:
+            "subdomain": {
+                "name": "*.4353.uh.edu",
+                "listen": [
+                    80,
+                    443
+                ],
+                "serve": "/home/ngavax/html/404.html"
+            }
+        },
+        "2": {
+            "name": "uh.edu",
+            "listen": [
+                80,
+                443
+            ],
+            //locations is a keyword to listen for subdirectory requests. "/" listens for index.html inside the html directory, then allow any other files to be accessed.
+            //If a file does not exist, it will then server a 404.html if it exists or just 404
+            "locations": {
+                "/": {
+                    "serve": "/home/uh.edu/html/"
+                },
+                "/openftp": {
+                    "serve": "/home/uh.edu/ftp/",
+                    "autoindex": true
+                },
+                "/proxy": {
+                    "proxy_pass": "192.168.1.55:80"
+                }
+            }
+        }
+    }
+]
+```
