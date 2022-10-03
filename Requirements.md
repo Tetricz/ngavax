@@ -72,7 +72,6 @@ Default file is a server.json file in the same directory as the executable. The 
 Example:
 
 ```json
-{
     "domains": [
         {
             "id": "4353.uh.edu",
@@ -86,42 +85,68 @@ Example:
                 "SOME_VAR=80",
                 "SOME_OTHER_VAR=bar"
             ],
-            "locations": {
-                "/": {
-                    "proxy_pass": "http://localserver.tld:80",
+            //locations is a keyword to listen for directory requests. "/" listens for index.html inside the html directory, then allow any other files to be accessed.
+            //If a file does not exist, it will then server a 404.html if it exists or just 404
+            "locations": [
+                {
+                    "directory": "/",
+                    "type": "proxy",
+                    "serve": "http://localserver.tld:80"
                 }
-            }
-            "subdomains": [
+            ]
+        },
+        {
+            "id": "banana.4353.uh.edu",
+            "listen": [
+                80,
+                443
+            ],
+            "locations": [
                 {
-                    "id": "*.4353.uh.edu",
-                    "serve": "/home/ngavax/html/404.html"
-                },
-                {
-                    "id": "banana.4353.uh.edu",
+                    "directory": "/banana",
+                    "type": "static",
                     "serve": "/home/ngavax/html/banana.html"
                 }
             ]
         },
         {
-            "id": "uh.edu",
+            "id": "*.4353.uh.edu",
             "listen": [
                 80,
                 443
             ],
-            //locations is a keyword to listen for subdirectory requests. "/" listens for index.html inside the html directory, then allow any other files to be accessed.
-            //If a file does not exist, it will then server a 404.html if it exists or just 404
-            "locations": {
-                "/": {
+            "locations": [
+                {
+                    "directory": "/",
+                    "type": "static",
+                    "serve": "/home/uh.edu/html/404.html"
+                }
+            ]
+        },
+        {
+            "id": "uhhh.edu",
+            "listen": [
+                80,
+                443
+            ],
+            "locations": [
+                {
+                    "directory": "/",
+                    "type": "static",
                     "serve": "/home/uh.edu/html/"
                 },
-                "/openftp": {
+                {
+                    "directory": "/ftp",
+                    "type": "static",
                     "serve": "/home/uh.edu/ftp/",
                     "autoindex": true
                 },
-                "/proxy": {
-                    "proxy_pass": "192.168.1.55:80"
+                {
+                    "directory": "/pass",
+                    "type": "proxy",
+                    "serve": "192.168.1.55:80"
                 }
-            }
+            ]
         }
     ]
 }
