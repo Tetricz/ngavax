@@ -6,28 +6,30 @@
                 80,
                 443
             ],
-            "locations": {
-                "/": {
+            "locations": [
+                {
+                    "directory": "/",
                     "proxy_pass": "http://localserver.tld:80"
                 }
-            },
+            ],
             "subdomains": [
                 {
                     "id": "banana.4353.uh.edu",
-                    "locations": {
-                        "/banana": {
+                    "locations": [
+                        {
+                            "directory": "/banana",
                             "serve": "/home/ngavax/html/banana.html"
                         }
-                    }
-                    
+                    ]
                 },
                 {
                     "id": "*.4353.uh.edu",
-                    "locations": {
-                        "/": {
-                            "serve": "/home/ngavax/html/404.html"
+                    "locations": [
+                        {
+                            "directory": "/",
+                            "serve": "/home/uh.edu/html/404.html"
                         }
-                    }
+                    ]
                 }
             ]
         },
@@ -37,18 +39,21 @@
                 80,
                 443
             ],
-            "locations": {
-                "/": {
+            "locations": [
+                {
+                    "directory": "/",
                     "serve": "/home/uh.edu/html/"
                 },
-                "/openftp": {
+                {
+                    "directory": "/ftp",
                     "serve": "/home/uh.edu/ftp/",
                     "autoindex": true
                 },
-                "/prox": {
+                {
+                    "directory": "/pass",
                     "proxy_pass": "192.168.1.55:80"
                 }
-            }
+            ]
         }
     ]
 }
