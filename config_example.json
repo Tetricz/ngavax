@@ -9,7 +9,8 @@
             "locations": [
                 {
                     "directory": "/",
-                    "proxy_pass": "http://localserver.tld:80"
+                    "type": "proxy",
+                    "serve": "http://localserver.tld:80"
                 }
             ],
             "subdomains": [
@@ -18,6 +19,7 @@
                     "locations": [
                         {
                             "directory": "/banana",
+                            "type": "static",
                             "serve": "/home/ngavax/html/banana.html"
                         }
                     ]
@@ -27,6 +29,7 @@
                     "locations": [
                         {
                             "directory": "/",
+                            "type": "static",
                             "serve": "/home/uh.edu/html/404.html"
                         }
                     ]
@@ -42,15 +45,18 @@
             "locations": [
                 {
                     "directory": "/",
+                    "type": "static",
                     "serve": "/home/uh.edu/html/"
                 },
                 {
                     "directory": "/ftp",
+                    "type": "static",
                     "serve": "/home/uh.edu/ftp/",
                     "autoindex": true
                 },
                 {
                     "directory": "/pass",
+                    "type": "proxy",
                     "proxy_pass": "192.168.1.55:80"
                 }
             ]
