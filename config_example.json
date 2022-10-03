@@ -1,36 +1,38 @@
-[
-    {
-        "domains": [
-            "4353.uh.edu",
-            "*.4353.uh.edu",
-            "uh.edu"
-        ],
-        "1":{
-            "name": "4353.uh.edu",
-            "includes": [
-                "/path/to/other/config.json",
-                "/path/to/other/config.json"
-            ],
+{
+    "domains": [
+        {
+            "id": "4353.uh.edu",
             "listen": [
                 80,
                 443
             ],
-            "env_vars": [
-                "SOME_VAR=foo",
-                "SOME_OTHER_VAR=bar"
-            ],
-            "proxy_pass": "http://localserver.tld:${var1}",
-            "subdomain": {
-                "name": "*.4353.uh.edu",
-                "listen": [
-                    80,
-                    443
-                ],
-                "serve": "/home/ngavax/html/404.html"
-            }
+            "locations": {
+                "/": {
+                    "proxy_pass": "http://localserver.tld:80"
+                }
+            },
+            "subdomains": [
+                {
+                    "id": "banana.4353.uh.edu",
+                    "locations": {
+                        "/banana": {
+                            "serve": "/home/ngavax/html/banana.html"
+                        }
+                    }
+                    
+                },
+                {
+                    "id": "*.4353.uh.edu",
+                    "locations": {
+                        "/": {
+                            "serve": "/home/ngavax/html/404.html"
+                        }
+                    }
+                }
+            ]
         },
-        "2": {
-            "name": "uh.edu",
+        {
+            "id": "uhhh.edu",
             "listen": [
                 80,
                 443
@@ -43,10 +45,10 @@
                     "serve": "/home/uh.edu/ftp/",
                     "autoindex": true
                 },
-                "/proxy": {
+                "/prox": {
                     "proxy_pass": "192.168.1.55:80"
                 }
             }
         }
-    }
-]
+    ]
+}

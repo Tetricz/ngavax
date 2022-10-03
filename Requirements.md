@@ -72,43 +72,38 @@ Default file is a server.json file in the same directory as the executable. The 
 Example:
 
 ```json
-[
-    {
-        "domains": [
-            "4353.uh.edu",
-            "*.4353.uh.edu",
-            "uh.edu"
-        ],
-        "1":{
-            "name": "4353.uh.edu",
-            //includes is a keyword for adding other json config files
-            "includes": [
-                "/path/to/other/config.json",
-                "/path/to/other/config.json"
-            ],
+{
+    "domains": [
+        {
+            "id": "4353.uh.edu",
             "listen": [
                 80,
                 443
             ],
             //This is an example of a way for us to setup user variables
+            //Only do this if we have some extra time
             "env_vars": [
-                "SOME_VAR=foo",
+                "SOME_VAR=80",
                 "SOME_OTHER_VAR=bar"
             ],
-            "proxy_pass": "http://localserver.tld:${var1}",
-            //Whenever you want to listen on a subdomain of a server in the config, it must be nested within the server
-            //Example:
-            "subdomain": {
-                "name": "*.4353.uh.edu",
-                "listen": [
-                    80,
-                    443
-                ],
-                "serve": "/home/ngavax/html/404.html"
+            "locations": {
+                "/": {
+                    "proxy_pass": "http://localserver.tld:80",
+                }
             }
+            "subdomains": [
+                {
+                    "id": "*.4353.uh.edu",
+                    "serve": "/home/ngavax/html/404.html"
+                },
+                {
+                    "id": "banana.4353.uh.edu",
+                    "serve": "/home/ngavax/html/banana.html"
+                }
+            ]
         },
-        "2": {
-            "name": "uh.edu",
+        {
+            "id": "uh.edu",
             "listen": [
                 80,
                 443
@@ -128,6 +123,6 @@ Example:
                 }
             }
         }
-    }
-]
+    ]
+}
 ```
