@@ -8,6 +8,30 @@ import static ngavax.app.MessageUtils.*;
 public class App {
     public static void main(String[] args) {
         System.out.println(getMessage());
-        System.out.println(getOtherMessage());
+        //System.out.println(getOtherMessage());
+
+        //The file location is hard coded here, we should read the command args and get the file location from there
+        parseConfig config = new parseConfig("..\\config_example.json");
+
+        //Prints the config somewhat prettily
+        config.printConfig();
+
+
+
+
+        //HEADERS are important
+        //When a client makes a request, the server will recieve a request, in teh request there will be HEADERS
+        //These headers will have a Host: field, this is what we will read to determine where the request gets passed to
+        //There is also a GET/POST/PUT/DELETE field, this is the directory field that you see in a URL.
+        
+
+        //Example:
+        //GET /api HTTP/1.1
+        //Host: example.com
+        //There are also user-agents and other fun things in the HEADERS, but we will ignore those for the most part
+
+        //When looking at the Host, we should start at the back and work our way forward
+        //First match the .com, then the .example, then the www
+        //If at any point the domain is not correct, we should return a 404 error
     }
 }

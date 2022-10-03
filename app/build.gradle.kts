@@ -13,8 +13,7 @@ repositories {
 
 dependencies {
     implementation("org.apache.commons:commons-text")
-    implementation("org.json:json:+")
-    implementation("com.google.code.gson:gson:+")
+    implementation("org.json:json:20220924")
 }
 
 application {

@@ -1,52 +1,71 @@
-[
-    {
-        "domains": [
-            "4353.uh.edu",
-            "*.4353.uh.edu",
-            "uh.edu"
-        ],
-        "1":{
-            "name": "4353.uh.edu",
-            "includes": [
-                "/path/to/other/config.json",
-                "/path/to/other/config.json"
-            ],
+{
+    "domains": [
+        {
+            "id": "4353.uh.edu",
             "listen": [
                 80,
                 443
             ],
-            "env_vars": [
-                "SOME_VAR=foo",
-                "SOME_OTHER_VAR=bar"
-            ],
-            "proxy_pass": "http://localserver.tld:${var1}",
-            "subdomain": {
-                "name": "*.4353.uh.edu",
-                "listen": [
-                    80,
-                    443
-                ],
-                "serve": "/home/ngavax/html/404.html"
-            }
+            "locations": [
+                {
+                    "directory": "/",
+                    "type": "proxy",
+                    "serve": "http://localserver.tld:80"
+                }
+            ]
         },
-        "2": {
-            "name": "uh.edu",
+        {
+            "id": "banana.4353.uh.edu",
             "listen": [
                 80,
                 443
             ],
-            "locations": {
-                "/": {
+            "locations": [
+                {
+                    "directory": "/banana",
+                    "type": "static",
+                    "serve": "/home/ngavax/html/banana.html"
+                }
+            ]
+        },
+        {
+            "id": "*.4353.uh.edu",
+            "listen": [
+                80,
+                443
+            ],
+            "locations": [
+                {
+                    "directory": "/",
+                    "type": "static",
+                    "serve": "/home/uh.edu/html/404.html"
+                }
+            ]
+        },
+        {
+            "id": "uhhh.edu",
+            "listen": [
+                80,
+                443
+            ],
+            "locations": [
+                {
+                    "directory": "/",
+                    "type": "static",
                     "serve": "/home/uh.edu/html/"
                 },
-                "/openftp": {
+                {
+                    "directory": "/ftp",
+                    "type": "static",
                     "serve": "/home/uh.edu/ftp/",
                     "autoindex": true
                 },
-                "/proxy": {
-                    "proxy_pass": "192.168.1.55:80"
+                {
+                    "directory": "/pass",
+                    "type": "proxy",
+                    "serve": "192.168.1.55:80"
                 }
-            }
+            ]
         }
-    }
-]
+    ]
+}

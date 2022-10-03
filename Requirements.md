@@ -72,62 +72,82 @@ Default file is a server.json file in the same directory as the executable. The 
 Example:
 
 ```json
-[
-    {
-        "domains": [
-            "4353.uh.edu",
-            "*.4353.uh.edu",
-            "uh.edu"
-        ],
-        "1":{
-            "name": "4353.uh.edu",
-            //includes is a keyword for adding other json config files
-            "includes": [
-                "/path/to/other/config.json",
-                "/path/to/other/config.json"
-            ],
+    "domains": [
+        {
+            "id": "4353.uh.edu",
             "listen": [
                 80,
                 443
             ],
             //This is an example of a way for us to setup user variables
+            //Only do this if we have some extra time
             "env_vars": [
-                "SOME_VAR=foo",
+                "SOME_VAR=80",
                 "SOME_OTHER_VAR=bar"
             ],
-            "proxy_pass": "http://localserver.tld:${var1}",
-            //Whenever you want to listen on a subdomain of a server in the config, it must be nested within the server
-            //Example:
-            "subdomain": {
-                "name": "*.4353.uh.edu",
-                "listen": [
-                    80,
-                    443
-                ],
-                "serve": "/home/ngavax/html/404.html"
-            }
+            //locations is a keyword to listen for directory requests. "/" listens for index.html inside the html directory, then allow any other files to be accessed.
+            //If a file does not exist, it will then server a 404.html if it exists or just 404
+            "locations": [
+                {
+                    "directory": "/",
+                    "type": "proxy",
+                    "serve": "http://localserver.tld:80"
+                }
+            ]
         },
-        "2": {
-            "name": "uh.edu",
+        {
+            "id": "banana.4353.uh.edu",
             "listen": [
                 80,
                 443
             ],
-            //locations is a keyword to listen for subdirectory requests. "/" listens for index.html inside the html directory, then allow any other files to be accessed.
-            //If a file does not exist, it will then server a 404.html if it exists or just 404
-            "locations": {
-                "/": {
+            "locations": [
+                {
+                    "directory": "/banana",
+                    "type": "static",
+                    "serve": "/home/ngavax/html/banana.html"
+                }
+            ]
+        },
+        {
+            "id": "*.4353.uh.edu",
+            "listen": [
+                80,
+                443
+            ],
+            "locations": [
+                {
+                    "directory": "/",
+                    "type": "static",
+                    "serve": "/home/uh.edu/html/404.html"
+                }
+            ]
+        },
+        {
+            "id": "uhhh.edu",
+            "listen": [
+                80,
+                443
+            ],
+            "locations": [
+                {
+                    "directory": "/",
+                    "type": "static",
                     "serve": "/home/uh.edu/html/"
                 },
-                "/openftp": {
+                {
+                    "directory": "/ftp",
+                    "type": "static",
                     "serve": "/home/uh.edu/ftp/",
                     "autoindex": true
                 },
-                "/proxy": {
-                    "proxy_pass": "192.168.1.55:80"
+                {
+                    "directory": "/pass",
+                    "type": "proxy",
+                    "serve": "192.168.1.55:80"
                 }
-            }
+            ]
         }
-    }
-]
+    ]
+}
 ```
