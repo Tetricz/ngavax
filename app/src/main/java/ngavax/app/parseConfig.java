@@ -65,6 +65,15 @@ class parseConfig {
         return this.domains;
     }
 
+    public JSONObject getDomainConfig(String id){
+        JSONObject domain = new JSONObject();
+        domain.put("id", id);
+        domain.put("listen", this.ports.get(id));
+        domain.put("locations", this.services.get(id));
+        return domain;
+
+    }
+
     public void printConfig(){
         this.units.forEach(domainNode -> {
             String id = ((JSONObject) domainNode).getString("id");
