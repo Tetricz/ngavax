@@ -7,7 +7,6 @@ import static ngavax.app.MessageUtils.*;
 public class App {
     public static void main(String[] args) {
         System.out.println(getMessage());
-        //System.out.println(getOtherMessage());
 
         //The file location is hard coded here
         //Program needs to read the command args and get the file location from there
@@ -46,6 +45,15 @@ public class App {
     
     //This thread will become the request handler, thus no need to spawn another thread
         //This is the request handler
+        //The file location is hard coded here, we should read the command args and get the file location from there
+        parseConfig config = new parseConfig("..\\config_example.json");
+
+        //Prints the config somewhat prettily
+        config.printConfig();
+
+
+
+
         //HEADERS are important
         //When a client makes a request, the server will recieve a request, in teh request there will be HEADERS
         //These headers will have a Host: field, this is what we will read to determine where the request gets passed to
