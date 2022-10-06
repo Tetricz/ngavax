@@ -21,7 +21,7 @@ public class App {
         //Start the proxy thread
         //proxyThread proxy = new proxyThread(data);
         //proxy.start();
-        proxyHander proxy = new proxyHander();
+        proxyHandler proxy = new proxyHandler();
         proxy.loadData(config);
         proxy.start();
         try {
