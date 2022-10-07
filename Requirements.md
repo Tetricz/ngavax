@@ -35,8 +35,8 @@ Have a warning if the number of workers threads is more than the number of cores
 
 The worker threads will be the:
 
-* [ ] Proxy/Cache handler (spawns based on config)
-* [ ] Static/Autoindex handler (spawn based on config)
+* [ ] Proxy/Cache handler
+* [ ] Static/Autoindex handler
 
 How we choose which worker to use is simple. A least recently used queue will be used to determine which worker to use. This will be done in the request handler.
 

@@ -8,9 +8,10 @@ import java.util.*;
 
 class parseConfig {
     private JSONArray units;
-    private int workerCount = 0;                                                     //Number of workers to spawn
-    private HashMap<String, JSONArray> ports = new HashMap<String, JSONArray>();     //HashMap of domain to ports    
-    private String root = new String();                                              //Root directory to search for files
+    private int workerCount = 0;                                                           //Number of workers to spawn
+    private JSONArray ports = new JSONArray();                                                                   //Array of all ports to listen on    
+    private HashMap<String, JSONArray> domainToPorts = new HashMap<String, JSONArray>();   //HashMap of domain to ports
+    private String root = new String();                                                    //Root directory to search for files
     //private log_level: 0 = debug, 1 = info, 2 = warning, 3 = error, 4 = critical
     //private log_file: location and name of where to put log file
 
@@ -32,7 +33,19 @@ class parseConfig {
             this.units.forEach(domainNode -> {
                 JSONObject domain = (JSONObject) domainNode;
                 String id = domain.getString("id");
-                this.ports.put(id, domain.getJSONArray("listen"));
+                //check if this.ports already has listen ports
+                if(this.ports.length() > 0){
+                    JSONArray listen = domain.getJSONArray("listen");
+                    for(int i = 0; i < listen.length(); i++){
+                        System.out.println((listen.getInt(i)));
+                        if(!this.ports.toList().contains(listen.getInt(i))){
+                            this.ports.put(listen.getInt(i));
+                        }
+                    }
+                }else{
+                    JSONArray listen = domain.getJSONArray("listen");
+                    this.ports = listen;
+                }
             });
         } catch (JSONException e) {
             e.printStackTrace();
@@ -49,13 +62,8 @@ class parseConfig {
         return this.root;
     }
 
-    public int[] getPorts(String id){
-        JSONArray ports = this.ports.get(id);
-        int[] portsArray = new int[ports.length()];
-        for(int i = 0; i < ports.length(); i++){
-            portsArray[i] = ports.getInt(i);
-        }
-        return portsArray;
+    public JSONArray getPorts(){
+        return this.ports;
     }
 
     public JSONObject validateDomain(String id){
@@ -105,7 +113,7 @@ class parseConfig {
             String id = ((JSONObject) domainNode).getString("id");
             System.out.println("================Open=================");
             System.out.println("Domain: " + id);
-            System.out.println("    Listening on ports: " + Arrays.toString(getPorts(id)));
+            //System.out.println("    Listening on ports: " + Arrays.toString(getPorts(id)));
             System.out.println("    Listening for directories:");
             for(int i = 0; i < getServices(id).length(); i++){
                 JSONObject service = getServices(id).getJSONObject(i);

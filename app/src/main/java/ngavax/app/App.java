@@ -24,7 +24,7 @@ public class App {
 
             //Prints the config somewhat prettily
             config.printConfig();
-            
+            System.out.println((config.getPorts()));
             //JSONObject directory = config.validateDirectory("uhhh.edu", "/");
             //System.out.println(config.getType(directory));
             //System.out.println(config.getServe(directory));
