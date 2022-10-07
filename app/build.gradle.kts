@@ -16,6 +16,17 @@ dependencies {
     implementation("org.json:json:20220924")
 }
 
+tasks.register("RunConfig", JavaExec::class) {
+    group = "application"
+    description = "Runs the application with the file argument"
+    mainClass.set("ngavax.app.App")
+    classpath = sourceSets["main"].runtimeClasspath
+
+    //This is where you can add arguments to the application
+    //This is the location of the config file for me
+    args = listOf("config_example.json")
+}
+
 application {
     // Define the main class for the application.
     mainClass.set("ngavax.app.App")
