@@ -2,48 +2,41 @@ package ngavax.app;
 
 //import json.org
 import org.json.*;
-
-import java.io.*;
 import java.util.*;
 
 
 
 class parseConfig {
     private JSONArray units;
-    private String[] domains = new String[0];
-    private HashMap<String, JSONArray> ports = new HashMap<String, JSONArray>();     //HashMap of domain to ports
-    private HashMap<String, JSONArray> services = new HashMap<String, JSONArray>();  //HashMap of domain to services
-    
+    private int workerCount = 0;                                                     //Number of workers to spawn
+    private HashMap<String, JSONArray> ports = new HashMap<String, JSONArray>();     //HashMap of domain to ports    
+    private String root = new String();                                              //Root directory to search for files
+    //private log_level: 0 = debug, 1 = info, 2 = warning, 3 = error, 4 = critical
+    //private log_file: location and name of where to put log file
 
     //Constructor for parseConfig
-    //This will be ran once at the start of the program
-    public parseConfig(String file) {
+    public parseConfig(JSONObject config) { //Move file reading to App.java instead and pass JSONObject here
         try {
-            FileReader file_config = new FileReader(file);
-            JSONObject config = new JSONObject(new JSONTokener(file_config));
-
+            if(config.has("workers")){
+                workerCount = config.getInt("workers");
+            }
+            if(config.has("root_dir")){
+                root = config.getString("root_dir");
+            }
+            if(!config.has("domains")){
+                throw new JSONException("No key \"domains\" found in config file");
+            }
+            
             this.units = config.getJSONArray("domains");
-
+            //Sets up domain
             this.units.forEach(domainNode -> {
                 JSONObject domain = (JSONObject) domainNode;
                 String id = domain.getString("id");
-                this.domains = Arrays.copyOf(this.domains, this.domains.length + 1);
                 this.ports.put(id, domain.getJSONArray("listen"));
-                try {
-                    this.services.put(id, domain.getJSONArray("locations"));
-                } catch (Exception e) {
-                    System.out.println(file + " does not have a locations array for " + id);
-                    System.exit(-1);
-                }
             });
-
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-            System.out.println("Error reading file, check path");
-            System.exit(-1);
         } catch (JSONException e) {
             e.printStackTrace();
-            System.out.println("Error parsing config file, possible JSON syntax error");
+            System.out.println(e);
             System.exit(-1);
         }
     }
@@ -57,21 +50,46 @@ class parseConfig {
         return portsArray;
     }
 
+    public JSONObject validateDomain(String id){
+        for (Object domain : this.units) {
+            if(((JSONObject)domain).getString("id").equals(id)){
+                return (JSONObject)domain;
+            }
+        }
+        return null;
+    }
+
     public JSONArray getServices(String id){
-        return this.services.get(id);
+        JSONObject domain = this.validateDomain(id);
+        return domain.getJSONArray("locations");
     }
 
-    public String[] getDomains(){
-        return this.domains;
+    //returns the location information if valid
+    //returns null if invalid
+    public JSONObject validateDirectory(String id, String directory){
+        JSONArray services = this.getServices(id);
+        for (Object service : services) {
+            if(((JSONObject)service).getString("directory").equals(directory)){
+                return (JSONObject)service;
+            }
+        }
+        return null;
     }
 
-    public JSONObject getDomainConfig(String id){
-        JSONObject domain = new JSONObject();
-        domain.put("id", id);
-        domain.put("listen", this.ports.get(id));
-        domain.put("locations", this.services.get(id));
-        return domain;
+    public String getType(JSONObject directory){
+        return ((JSONObject)directory).getString("type");
+    }
 
+    public boolean validateAutoIndex(JSONObject directory){
+        if(directory.has("autoindex")){
+            return directory.getBoolean("autoindex");
+        }else{
+            return false;
+        }
+    }
+
+    public String getServe(JSONObject directory){
+        return ((JSONObject)directory).getString("serve");
     }
 
     public void printConfig(){
@@ -86,8 +104,9 @@ class parseConfig {
                 //print a divider
                 System.out.println("        -----------------------------");
                 System.out.println("        Directory: " + service.getString("directory"));
-                System.out.println("        Type: " + service.getString("type"));
-                System.out.println("        Serving: " + service.getString("serve"));
+                System.out.println("        Type: " + getType(service));
+                System.out.println("        Serving: " + getServe(service));
+                System.out.println("        Autoindex: " + validateAutoIndex(service));
             }
             System.out.println("================Close================");
         });
