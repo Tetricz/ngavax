@@ -18,7 +18,7 @@ class parseConfig {
     public parseConfig(JSONObject config) { //Move file reading to App.java instead and pass JSONObject here
         try {
             if(config.has("workers")){
-                workerCount = config.getInt("workers");
+                this.workerCount = config.getInt("workers");
             }
             if(config.has("root_dir")){
                 root = config.getString("root_dir");
@@ -39,6 +39,14 @@ class parseConfig {
             System.out.println(e);
             System.exit(-1);
         }
+    }
+
+    public int getWorkerCount(){
+        return this.workerCount;
+    }
+
+    public String getRoot(){
+        return this.root;
     }
 
     public int[] getPorts(String id){
