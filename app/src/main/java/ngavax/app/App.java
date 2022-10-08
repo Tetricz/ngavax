@@ -22,6 +22,9 @@ public class App {
         //proxyThread proxy = new proxyThread(data);
         //proxy.start();
         proxyHandler proxy = new proxyHandler();
+        String test = proxy.getHTML("https://www.google.com");
+        System.out.println(test);
+        String output = getUrlContents("https://www.google.com");
         proxy.loadData(config);
         proxy.start();
         try {

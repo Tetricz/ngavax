@@ -1,34 +1,38 @@
 package ngavax.app;
+import java.net.*;
+import java.io.*;
 
-public class proxyHandler extends Thread {
-    //Spawn a thread and create requests to other servers
-    //Once they respond send the response back to the client
+public class proxyHandler {
 
-    private parseConfig data = null;
-    private int test = 0;
-
-    //these are examples for loading data into the thread from the main thread
-    public void loadData(parseConfig data) {
-        this.data = data;
+    public String getHTML(String URL){
+        String output = getUrlContents("https://www.google.com");
+        System.out.println(output);  
     }
-
-    public void incTest(int i){
-        this.test += i;
-    }
-
-    public void run(){
-        try {
-            // Displaying the thread that is running
-            System.out.println("Thread " + Thread.currentThread().getId() + " is running");
-            //this.data.printConfig();
-            System.out.println("Test: " + this.test);
-            sleep(1000);
-            System.out.println("Test: " + this.test);
-        }
-        catch (Exception e) {
-            // Throwing an exception
-            System.out.println("Exception is caught");
-            e.printStackTrace();
-        }
-    }
+    public String getUrlContents(String theUrl)  {  
+    StringBuilder content = new StringBuilder();  
+  // Use try and catch to avoid the exceptions  
+    try  
+    {  
+      URL url = new URL(theUrl); // creating a url object  
+      URLConnection urlConnection = url.openConnection(); // creating a urlconnection object  
+  
+      // wrapping the urlconnection in a bufferedreader  
+      BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));  
+      String line;  
+      // reading from the urlconnection using the bufferedreader  
+      while ((line = bufferedReader.readLine()) != null)  
+      {  
+        content.append(line + "\n");  
+      }  
+      bufferedReader.close();  
+      return content.toString();  
+    }  
+    catch(Exception e)  
+    {  
+      e.printStackTrace();  
+    }  
+    
 }
+
+
+
