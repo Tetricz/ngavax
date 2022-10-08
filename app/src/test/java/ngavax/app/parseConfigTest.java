@@ -5,15 +5,13 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.util.Arrays;
-
-
 public class parseConfigTest {
     @Test void getPorts(){
         JSONObject obj = new JSONObject("{\"domains\":[{\"id\":\"example.com\",\"listen\":[80,443],\"locations\":[{\"directory\":\"/\",\"type\":\"static\",\"serve\":\"/var/www/html\"},{\"directory\":\"/api\",\"type\":\"proxy\",\"serve\":\"test.com:80\"}]}]}");
         parseConfig config = new parseConfig(obj);
-        int[] ports = {80,443};
-        //assertEquals(Arrays.toString(ports), Arrays.toString(config.getPorts()));
+        JSONArray ports = new JSONArray("[80,443]");
+        assertEquals(ports.getInt(0), config.getPorts().get(0));
+        assertEquals(ports.getInt(1), config.getPorts().get(1));
     }
 
     @Test void validateDomainConfig(){
@@ -24,6 +22,15 @@ public class parseConfigTest {
         assertEquals(domain.getJSONArray("locations").getJSONObject(0).getString("serve"), config.validateDomain("example.com").getJSONArray("locations").getJSONObject(0).getString("serve"));
         assertEquals(domain.getJSONArray("locations").getJSONObject(0).getString("directory"), config.validateDomain("example.com").getJSONArray("locations").getJSONObject(0).getString("directory"));
         assertEquals(null, config.validateDomain("notexample.com"));
+    }
+
+    @Test void validateDomainPort(){
+        JSONObject obj = new JSONObject("{\"domains\":[{\"id\":\"example.com\",\"listen\":[80,443],\"locations\":[{\"directory\":\"/\",\"type\":\"static\",\"serve\":\"/var/www/html\"},{\"directory\":\"/api\",\"type\":\"proxy\",\"serve\":\"test.com:80\"}]}]}");
+        parseConfig config = new parseConfig(obj);        JSONObject domain = new JSONObject("{\"id\":\"example.com\",\"listen\":[80,443],\"locations\":[{\"directory\":\"/\",\"type\":\"static\",\"serve\":\"/var/www/html\"}]}");
+        assertEquals(1, config.validateDomainPort("example.com", 80));
+        assertEquals(1, config.validateDomainPort("example.com", 443));
+        assertEquals(-1, config.validateDomainPort("example.com", 8080));
+        assertEquals(-1, config.validateDomainPort("notexample.com", 80));
     }
 
     @Test void getServices(){

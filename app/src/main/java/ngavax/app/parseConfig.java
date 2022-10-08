@@ -9,7 +9,7 @@ import java.util.*;
 class parseConfig {
     private JSONArray units;
     private int workerCount = 0;                                                           //Number of workers to spawn
-    private JSONArray ports = new JSONArray();                                                                   //Array of all ports to listen on    
+    private JSONArray ports = new JSONArray();                                             //Array of all ports to listen on    
     private HashMap<String, JSONArray> domainToPorts = new HashMap<String, JSONArray>();   //HashMap of domain to ports
     private String root = new String();                                                    //Root directory to search for files
     //private log_level: 0 = debug, 1 = info, 2 = warning, 3 = error, 4 = critical
@@ -33,11 +33,12 @@ class parseConfig {
             this.units.forEach(domainNode -> {
                 JSONObject domain = (JSONObject) domainNode;
                 String id = domain.getString("id");
-                //check if this.ports already has listen ports
+                JSONArray ports = domain.getJSONArray("listen");
+                this.domainToPorts.put(id, ports);
+                //check if this.ports already has the listen ports
                 if(this.ports.length() > 0){
                     JSONArray listen = domain.getJSONArray("listen");
                     for(int i = 0; i < listen.length(); i++){
-                        System.out.println((listen.getInt(i)));
                         if(!this.ports.toList().contains(listen.getInt(i))){
                             this.ports.put(listen.getInt(i));
                         }
@@ -75,8 +76,26 @@ class parseConfig {
         return null;
     }
 
+    //If domain request on port is valid, return 1, else return -1
+    public int validateDomainPort(String id, int port){
+        JSONObject domain = this.validateDomain(id);
+        if(domain == null){
+            return -2;
+        }
+        JSONArray listen = domain.getJSONArray("listen");
+        for(int i = 0; i < listen.length(); i++){
+            if(listen.getInt(i) == port){
+                return 1;
+            }
+        }
+        return -1;
+    }
+
     public JSONArray getServices(String id){
         JSONObject domain = this.validateDomain(id);
+        if(domain == null){
+            return null;
+        }
         return domain.getJSONArray("locations");
     }
 
@@ -113,7 +132,7 @@ class parseConfig {
             String id = ((JSONObject) domainNode).getString("id");
             System.out.println("================Open=================");
             System.out.println("Domain: " + id);
-            //System.out.println("    Listening on ports: " + Arrays.toString(getPorts(id)));
+            //System.out.println("    Listening on ports: " + getPorts());
             System.out.println("    Listening for directories:");
             for(int i = 0; i < getServices(id).length(); i++){
                 JSONObject service = getServices(id).getJSONObject(i);
