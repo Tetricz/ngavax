@@ -2,47 +2,53 @@
 
 package ngavax.app;
 
-import static ngavax.app.MessageUtils.*;
+import org.json.*;
+import java.io.*;
+import java.util.*;
+
 
 public class App {
     public static void main(String[] args) {
-        System.out.println(getMessage());
-
         //The file location is hard coded here
         //Program needs to read the command args and get the file location from there
-        parseConfig config = new parseConfig("..\\config_example.json");
+        //print out args
+        System.out.println("args: " + Arrays.toString(args));
+        if(args.length == 0){
+            System.out.println("No file location provided");
+            System.exit(-1);
+        }
+        try {
+            FileReader file_config = new FileReader(args[0]);
+            JSONObject jsonText = new JSONObject(new JSONTokener(file_config));
+            parseConfig config = new parseConfig(jsonText);
 
-        //Prints the config somewhat prettily
-        //config.printConfig();
+            //Prints the config somewhat prettily
+            config.printConfig();
+            System.out.println((config.getPorts()));
+            //JSONObject directory = config.validateDirectory("uhhh.edu", "/");
+            //System.out.println(config.getType(directory));
+            //System.out.println(config.getServe(directory));
 
-
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            System.out.println("Error reading file, check path");
+            System.exit(-1);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            System.out.println("Error parsing config file, possible JSON syntax error");
+            System.exit(-1);
+        }
+        
         //https://www.geeksforgeeks.org/java-util-concurrent-package/
         //https://www.geeksforgeeks.org/multithreading-in-java/
-        //Start the proxy thread
-        //proxyThread proxy = new proxyThread(data);
+
+        //proxyHander proxy = new proxyHander();
         //proxy.start();
-        proxyHander proxy = new proxyHander();
-        proxy.loadData(config);
-        proxy.start();
-        try {
-            Thread.sleep(200);
-        } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        proxy.incTest(5);
 
-        //Start the static thread
-        //staticThread static = new staticThread(data);
-        //static.start();
-        staticHandler staticFiles = new staticHandler();
-        staticFiles.start();
-
+        //staticHandler staticFiles = new staticHandler();
+        //staticFiles.start();
         
-
-
-
-    
+        
     //This thread will become the request handler, thus no need to spawn another thread
 
         //HEADERS are important
