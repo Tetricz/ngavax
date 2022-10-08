@@ -22,28 +22,11 @@ public class App {
         //proxyThread proxy = new proxyThread(data);
         //proxy.start();
         proxyHandler proxy = new proxyHandler();
-        String test = proxy.getHTML("https://www.google.com");
-        System.out.println(test);
-        String output = getUrlContents("https://www.google.com");
-        proxy.loadData(config);
-        proxy.start();
-        try {
-            Thread.sleep(200);
-        } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        proxy.incTest(5);
-
-        //Start the static thread
-        //staticThread static = new staticThread(data);
-        //static.start();
-        staticHandler staticFiles = new staticHandler();
-        staticFiles.start();
-
+        proxy.getHTML("https://www.google.com");
         
-
-
+        String output = proxy.getUrlContents("https://www.google.com");
+        //print output
+        System.out.println(output);
 
     
     //This thread will become the request handler, thus no need to spawn another thread
