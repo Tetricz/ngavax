@@ -50,3 +50,8 @@ Takes in a JSONObject representing a service and returns a string representing t
 ### validateAutoIndex(JSONObject directory)
 
 Takes in a JSONObject representing a service and returns a boolean representing whether or not autoindex is enabled.
+
+### validateDirectory(String id, String directory)
+
+Takes in a string representing the host name(domain) and a string representing the path to the directory.
+Then this will check to make sure the directory is valid for the domain.
