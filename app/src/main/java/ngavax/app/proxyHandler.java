@@ -19,7 +19,12 @@ public class proxyHandler {
     //This will be done by reading the header and then replacing the domain with the IP address
     //The header will then be returned to the caller
     JSONObject settings = new JSONObject("{\"serve\":\"http://localserver.tld:80\",\"type\":\"proxy\",\"directory\":\"/\"}"); //slice this up
-    String modifiedheader = ProxyTests.test1; //test example we have
+    String HEADERS = "GET / HTTP/3\nHost: www.tetricz.com\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:105.0) Gecko/201001\nAccept: text/css,*/*;q=0.1\nAccept-Language: en-US,en;q=0.5\nAccept-Encoding: gzip, deflate, br\nAlt-Used: www.tetricz.com\nConnection: keep-alive\nCookie: _ga=GA1.2.582144703.1664840968\nSec-Fetch-Dest: style\nSec-Fetch-Mode: no-cors\nSec-Fetch-Site: same-origin\nPragma: no-cache\nCache-Control: no-cache\nTE: trailers";
+
+    String modifiedheader = ""; //logic to modify header
+
+    String newHost = settings.getString(key:"serve");
+    String newDirectory = settings.getString(key:"directory")
 
     return modifiedheader;
   }
