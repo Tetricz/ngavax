@@ -26,11 +26,11 @@ public class parseConfigTest {
 
     @Test void validateDomainPort(){
         JSONObject obj = new JSONObject("{\"domains\":[{\"id\":\"example.com\",\"listen\":[80,443],\"locations\":[{\"directory\":\"/\",\"type\":\"static\",\"serve\":\"/var/www/html\"},{\"directory\":\"/api\",\"type\":\"proxy\",\"serve\":\"test.com:80\"}]}]}");
-        parseConfig config = new parseConfig(obj);        JSONObject domain = new JSONObject("{\"id\":\"example.com\",\"listen\":[80,443],\"locations\":[{\"directory\":\"/\",\"type\":\"static\",\"serve\":\"/var/www/html\"}]}");
+        parseConfig config = new parseConfig(obj);        
         assertEquals(1, config.validateDomainPort("example.com", 80));
         assertEquals(1, config.validateDomainPort("example.com", 443));
         assertEquals(-1, config.validateDomainPort("example.com", 8080));
-        assertEquals(-1, config.validateDomainPort("notexample.com", 80));
+        assertEquals(-2, config.validateDomainPort("notexample.com", 80));
     }
 
     @Test void getServices(){
