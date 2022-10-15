@@ -19,7 +19,8 @@ public class proxyHandler {
     //This will be done by reading the header and then replacing the domain with the IP address
     //The header will then be returned to the caller
     JSONObject settings = new JSONObject("{\"serve\":\"http://localserver.tld:80\",\"type\":\"proxy\",\"directory\":\"/\"}"); //slice this up
-    String modifiedheader = ;
+    String modifiedheader = ProxyTests.test1; //test example we have
+
     return modifiedheader;
   }
 
