@@ -2,6 +2,7 @@ package ngavax.app;
 
 import java.net.*;
 import java.io.*;
+import org.json.*;
 
 public class proxyHandler {
 
@@ -9,18 +10,20 @@ public class proxyHandler {
     String output = getUrlContents(URL);
     System.out.println(output);
   }
-  
-  public String modifyHeader(String header) {
+
+  public String modifyHeader(JSONObject settings, String modifiedheader) {
     //This function will modify the header to match the config file
     //This will be done by reading the config file and then modifying the header
     //The config file will have a list of domains and their corresponding IP addresses
     //The header will be modified to match the IP address of the domain
     //This will be done by reading the header and then replacing the domain with the IP address
     //The header will then be returned to the caller
-    return header;
+    JSONObject settings = new JSONObject("{\"serve\":\"http://localserver.tld:80\",\"type\":\"proxy\",\"directory\":\"/\"}"); //slice this up
+    String modifiedheader = ;
+    return modifiedheader;
   }
 
-  }
+  
 
   public String getUrlContents(String theUrl) {
     StringBuilder content = new StringBuilder();
