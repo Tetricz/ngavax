@@ -22,20 +22,29 @@
 
 * The application should read and parse the configuration file. On error output problem, then exit with code (-1).
 * Check to make sure socket is available, if not, error and exit with code (-2).
-* If the config file has no proxying needed, only load the request handler and Static/Autoindex handler.
-* If only Proxying/Cache is needed, only load the proxy/cache handler.
-* Multiple Proxy/Cache handlers can be loaded upon configuration.
-* Load all handlers if they are needed
-* Request Handler will always be loaded and will pass requests based on the HEADERS and URI.
+* load worker threads
 
 ### Multi-Threading
 
 These are all on their own threads.
 
-* [ ] Request handler
-* [ ] Response handler
+* [ ] Request handler(always listening)
+* [ ] Worker threads(spawn based on config)
+
+Have a warning if the number of workers threads is more than the number of cores.
+
+The worker threads will be the:
+
 * [ ] Proxy/Cache handler
 * [ ] Static/Autoindex handler
+
+How we choose which worker to use is simple. A least recently used queue will be used to determine which worker to use. This will be done in the request handler.
+
+Why we aren't doing it the same as Nginx. The way Nginx handles multiprocessing is by starting with the Main process which reads the config and open the listeners on the ports. This is the only process that does this as it is "priviledged". Then it will spawn a cache loader. This loads the cache on the disk into memory and then dies. A cache Handler is also spawned shortly after which handles the pruning and ensures the cache doesn't grow too large. Finally the worker processes which handle just about everything else spawn. The amount spawned are based on the configuration, but by default (auto) it spawns one process per core of your machine. The workers will read and write to the disk and communicate with upstream servers.
+
+The problem with doing this in Java is the JVM. While Java supports multithreading natively, it does not support multiprocessing. Thus we use this same concept, but with multi-threading instead. The main thread will spawn the worker threads and whenever it gets a request it will pass it to the worker threads. There will be event queueing for the workers, so hopefully we can balance that out a bit.
+
+TLDR - Java is not C and multiprocessing isn't as efficient. Also I don't wanna
 
 ### Request Handler
 
@@ -61,9 +70,15 @@ File path will be specified in the configuration file. If the file path is a dir
 
 Autoindexing will be done by having a generated html file with all the files in a specified directory. The index will be cached and updated based on rules set in the configuration file. Example rules: on a cron schedule, on a request(with limits on how often), on a file change(if possible), on start.
 
-### TCP Load balancing
+### Load balancing
 
-TODO
+Methods for load balancing.
+
+* Round Robin
+* Least connections
+* Fastest response
+
+TODO create config
 
 ### Config File
 

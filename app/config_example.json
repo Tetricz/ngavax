@@ -1,8 +1,8 @@
 {
     "worker_threads": 4,
-    "log_level": "info",                    //Not implemented
-    "log_file": "/var/log/ngavax.log",      //Not implemented
-    "root_dir": "/home/ngavax/",            //Not implemented
+    "log_level": "info",
+    "log_file": "/var/log/ngavax.log",
+    "root_dir": "/home/ngavax/",
     "domains": [
         {
             "id": "4353.uh.edu",
