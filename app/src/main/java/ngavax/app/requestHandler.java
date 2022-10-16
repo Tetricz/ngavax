@@ -8,8 +8,7 @@ class RequestHandler extends Thread
 {
     private Socket socket;
 
-    RequestHandler( Socket socket )
-    {
+    RequestHandler( Socket socket ){
         this.socket = socket;
     }
 
@@ -18,7 +17,7 @@ class RequestHandler extends Thread
     {
         try
         {
-            System.out.println( "Received a connection" );
+            System.out.println("Request from " + this.socket.getPort());
 
             // Get input and output streams
             BufferedReader in = new BufferedReader( new InputStreamReader( socket.getInputStream() ) );
