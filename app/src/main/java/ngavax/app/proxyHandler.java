@@ -1,39 +1,40 @@
 package ngavax.app;
 
 import java.net.*;
+import java.util.HashMap;
 import java.io.*;
-//import org.json.*;
+import org.json.*;
 
 public class proxyHandler {
-  public void proxyHandler(){
-    //do nothing
-  }
 
   public void getHTML(String URL) {
     String output = getUrlContents(URL);
     System.out.println(output);
   }
 
-  public String modifyHeader(String modifiedheader) { //JSONObject settings
-    //This function will modify the header to match the config file
-    //This will be done by reading the config file and then modifying the header
-    //The config file will have a list of domains and their corresponding IP addresses
-    //The header will be modified to match the IP address of the domain
-    //This will be done by reading the header and then replacing the domain with the IP address
-    //The header will then be returned to the caller
-    //settings = new JSONObject("{\"serve\":\"http://localserver.tld:80\",\"type\":\"proxy\",\"directory\":\"/\"}"); //slice this up
-    String HEADERS = "GET / HTTP/3\nHost: www.tetricz.com\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:105.0) Gecko/201001\nAccept: text/css,*/*;q=0.1\nAccept-Language: en-US,en;q=0.5\nAccept-Encoding: gzip, deflate, br\nAlt-Used: www.tetricz.com\nConnection: keep-alive\nCookie: _ga=GA1.2.582144703.1664840968\nSec-Fetch-Dest: style\nSec-Fetch-Mode: no-cors\nSec-Fetch-Site: same-origin\nPragma: no-cache\nCache-Control: no-cache\nTE: trailers";
+  public HashMap<String, String> modifyHeader(JSONObject settings, String HEADERS) {
+    //HEADERS = "GET / HTTP/3\nHost: www.tetricz.com\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:105.0) Gecko/201001\nAccept: text/css,*/*;q=0.1\nAccept-Language: en-US,en;q=0.5\nAccept-Encoding: gzip, deflate, br\nAlt-Used: www.tetricz.com\nConnection: keep-alive\nCookie: _ga=GA1.2.582144703.1664840968\nSec-Fetch-Dest: style\nSec-Fetch-Mode: no-cors\nSec-Fetch-Site: same-origin\nPragma: no-cache\nCache-Control: no-cache\nTE: trailers";
+    
     String[] arrofHEADERS = HEADERS.split("\n");
 
-    for (String a: arrofHEADERS)
-        System.out.println(a);
+    HashMap<String, String> modheaders = new HashMap<String, String>();
 
-    //String modifiedheader = ""; //logic to modify header, 
+    modheaders.put(null, arrofHEADERS[0]);
+    for (int i = 1; i < arrofHEADERS.length; i++) {
+      String[] header = arrofHEADERS[i].split(": ");
+      modheaders.put(header[0], header[1]);
+    }
 
-    String newHost = "localserver.tld:80";
-    String newDirectory = "/";
+    modheaders.remove("Host");
+    modheaders.put("Host", settings.getString("serve"));
 
-    return modifiedheader;
+    modheaders.remove(null);
+    modheaders.put(null, "GET " + settings.getString("directory"));
+
+    modheaders.remove("Alt-Used");
+    modheaders.put("Alt-Used", settings.getString("serve"));
+
+    return modheaders;
   }
 
   
