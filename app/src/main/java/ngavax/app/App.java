@@ -47,8 +47,7 @@ public class App {
 
         //staticHandler staticFiles = new staticHandler();
         //staticFiles.start();
-        
-        
+
     //This thread will become the request handler, thus no need to spawn another thread
 
         //HEADERS are important
