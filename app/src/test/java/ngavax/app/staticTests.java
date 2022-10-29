@@ -1,6 +1,5 @@
 package ngavax.app;
 
-import org.json.*;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

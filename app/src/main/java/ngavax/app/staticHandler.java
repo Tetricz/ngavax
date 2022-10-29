@@ -2,7 +2,6 @@ package ngavax.app;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.*;
 
 public class staticHandler {
 
@@ -27,5 +26,14 @@ public class staticHandler {
         htmlIndex += "</pre><hr></body>\n</html>";
 
         return htmlIndex;
+    }
+
+    public File getFile(String path) throws IOException {
+        File file = new File(path);
+        if(file.exists()){
+            return file;
+        } else {
+            return null;
+        }
     }
 }

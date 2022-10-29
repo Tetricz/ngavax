@@ -8,7 +8,7 @@ import java.util.*;
 
 
 public class App {
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(String[] args) throws Exception {
         //The file location is hard coded here
         //Program needs to read the command args and get the file location from there
         //print out args
@@ -29,7 +29,7 @@ public class App {
             //JSONObject directory = config.validateDirectory("uhhh.edu", "/");
             //System.out.println(config.getType(directory));
             //System.out.println(config.getServe(directory));
-
+/*
             socketListener listen = new socketListener(180);
             listen.startServer();
             System.out.println("Waiting for connections");
@@ -38,7 +38,9 @@ public class App {
             }
             System.out.println("Closing connections");
             listen.stopServer();
-
+*/
+        requestUndertow listen = new requestUndertow(8080);
+        listen.start();
 
         } catch (FileNotFoundException e) {
             e.printStackTrace();
