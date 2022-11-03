@@ -5,7 +5,17 @@ import java.io.IOException;
 
 public class staticHandler {
 
+    private String root_path;
+
+    public staticHandler(String root) {
+        this.root_path = root;
+    }
+
     public String indexPath(String path){
+        String href = path;
+        path = this.root_path + path;
+
+        System.out.println(path);
         File dir = new File(path);
         //String for html
         String htmlIndex = "<html>\n<head><title>Index</title></head>\n<body>\n<h1>Index</h1><hr><pre>\n<a href=\"" + "../" + "\">../</a>\n";
@@ -16,9 +26,9 @@ public class staticHandler {
         String htmlDir = "";
         for(int i=0; i < contents.length; i++) {
             if(new File(path + contents[i]).isDirectory()){
-                htmlDir += "<a href=\"" + contents[i] + "\">" + contents[i] + "</a>\n";
+                htmlDir += "<a href=\"" + href + contents[i] + "/\">" + contents[i] + "</a>\n";
             } else {
-                htmlFil = "<a href=\"" + contents[i] + "\">" + contents[i] + "</a>\n";
+                htmlFil += "<a href=\"" + href + contents[i] + "\">" + contents[i] + "</a>\n";
             }
         }
         htmlIndex += htmlDir;
