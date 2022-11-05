@@ -8,10 +8,12 @@ import io.undertow.util.HeaderMap;
 import io.undertow.util.Headers;
 
 public class requestUndertow {
-    Undertow server;
-    staticHandler staticFiles = new staticHandler(".");
+    private Undertow server;
+    private staticHandler staticFiles = new staticHandler(".");
+    private parseConfig config;
 
-    public requestUndertow(int port) {
+    public requestUndertow(int port, parseConfig config) {
+        this.config = config;
         this.server = Undertow.builder()
                 .setServerOption(UndertowOptions.ENABLE_HTTP2, true)
                 .addHttpListener(port, "0.0.0.0")

@@ -39,7 +39,7 @@ public class App {
             System.out.println("Closing connections");
             listen.stopServer();
 */
-        requestUndertow listen = new requestUndertow(8080);
+        requestUndertow listen = new requestUndertow(8080, config);
         listen.start();
 
         } catch (FileNotFoundException e) {
@@ -51,7 +51,7 @@ public class App {
             System.out.println("Error parsing config file, possible JSON syntax error");
             System.exit(-1);
         }
-        
+
         //https://www.geeksforgeeks.org/java-util-concurrent-package/
         //https://www.geeksforgeeks.org/multithreading-in-java/
 
@@ -60,8 +60,8 @@ public class App {
 
         //staticHandler staticFiles = new staticHandler();
         //staticFiles.start();
-        
-        
+
+
     //This thread will become the request handler, thus no need to spawn another thread
 
         //HEADERS are important
