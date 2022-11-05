@@ -8,13 +8,13 @@ import java.util.*;
 
 
 public class App {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         //The file location is hard coded here
         //Program needs to read the command args and get the file location from there
         //print out args
-        System.out.println("args: " + Arrays.toString(args));
+        System.out.println("Parameters: " + Arrays.toString(args));
         if(args.length == 0){
-            System.out.println("No file location provided");
+            System.out.println("No file location provided \nUsage: java -jar ngavax.jar <file location>");
             System.exit(-1);
         }
         try {
@@ -23,11 +23,24 @@ public class App {
             parseConfig config = new parseConfig(jsonText);
 
             //Prints the config somewhat prettily
-            config.printConfig();
+            //config.printConfig();
             System.out.println((config.getPorts()));
+
             //JSONObject directory = config.validateDirectory("uhhh.edu", "/");
             //System.out.println(config.getType(directory));
             //System.out.println(config.getServe(directory));
+/*
+            socketListener listen = new socketListener(180);
+            listen.startServer();
+            System.out.println("Waiting for connections");
+            while(listen.isAlive()){
+                Thread.sleep(1000);
+            }
+            System.out.println("Closing connections");
+            listen.stopServer();
+*/
+        requestUndertow listen = new requestUndertow(8080, config);
+        listen.start();
 
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -38,7 +51,7 @@ public class App {
             System.out.println("Error parsing config file, possible JSON syntax error");
             System.exit(-1);
         }
-        
+
         //https://www.geeksforgeeks.org/java-util-concurrent-package/
         //https://www.geeksforgeeks.org/multithreading-in-java/
 

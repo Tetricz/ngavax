@@ -14,6 +14,9 @@ repositories {
 dependencies {
     implementation("org.apache.commons:commons-text")
     implementation("org.json:json:20220924")
+    implementation("org.slf4j:slf4j-api:2.0.3")
+
+    implementation("io.undertow:undertow-core:2.3.0.Final")
 }
 
 tasks.register("RunConfig", JavaExec::class) {
