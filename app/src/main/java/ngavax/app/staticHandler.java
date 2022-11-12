@@ -2,6 +2,9 @@ package ngavax.app;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class staticHandler {
 
@@ -15,7 +18,7 @@ public class staticHandler {
         String href = path;
         path = this.root_path + path;
 
-        System.out.println(path);
+        //System.out.println(path);
         File dir = new File(path);
         //String for html
         String htmlIndex = "<html>\n<head><title>Index</title></head>\n<body>\n<h1>Index</h1><hr><pre>\n<a href=\"" + "../" + "\">../</a>\n";
@@ -38,12 +41,8 @@ public class staticHandler {
         return htmlIndex;
     }
 
-    public File getFile(String path) throws IOException {
-        File file = new File(path);
-        if(file.exists()){
-            return file;
-        } else {
-            return null;
-        }
+    public ByteBuffer getFile(String path) throws IOException {
+        Path r = Paths.get(this.root_path + path);
+        return ByteBuffer.wrap(java.nio.file.Files.readAllBytes(r));
     }
 }

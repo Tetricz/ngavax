@@ -40,12 +40,13 @@ public class requestUndertow {
                         String hostname = HEADERS.get("Host").toString().substring(1,
                                                     HEADERS.get("Host").toString().length() - 1);
                         JSONObject domain = config.validateDomainPort(hostname, port);
+                        System.out.println("directory");
                         if(domain != null){
                             System.out.println("Domain is valid... retrieving services on " + path);
                             JSONObject directory = config.validateDirectory(hostname, path);
-                            String type = config.getType(directory);
                             if(directory != null){
-                                System.out.println("Type: " + type);
+                                String type = config.getType(directory);
+                                //System.out.println("Type: " + type);
                                 System.out.println("Directory is valid... retrieving services");
                                 if(type.equals("static")){
                                     System.out.println("Serving static files");
@@ -67,12 +68,12 @@ public class requestUndertow {
                                 }
                             }else{
                                 System.out.println("Invalid directory");
-                                System.out.println("Invalid directory");
                                 boolean default_location = config.validateDirBlock(hostname);
-                                if(default_location){
+                                if(!default_location){
+                                    JSONObject default_dir = config.getDef(hostname);
+                                    String type = config.getType(default_dir);
                                     System.out.println("Serving default location");
                                     if(type.equals("static")){
-                                        JSONObject default_dir = config.getDef(hostname);
                                         String serve = default_dir.getString("serve");
                                         //String serve = config.getServeDefault(hostname);
                                         if(config.validateAutoIndex(default_dir)){
