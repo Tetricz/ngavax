@@ -39,8 +39,14 @@ public class App {
             System.out.println("Closing connections");
             listen.stopServer();
 */
-        requestUndertow listen = new requestUndertow(8080, config);
+
+
+        requestUndertow listen = new requestUndertow(80, config);
         listen.start();
+        //proxyHandler proxy = new proxyHandler();
+        //String res = proxy.getUrlContents("http://localhost:8080");
+        //System.out.println(res);
+        //listen.stop();
 
         } catch (FileNotFoundException e) {
             e.printStackTrace();

@@ -4,12 +4,12 @@ package ngavax.app;
 import org.json.*;
 import java.util.*;
 
-
+//This should be converted to a singleton, too bad I wrote it before I knew that.
 
 class parseConfig {
     private JSONArray units;
     private int workerCount = 0;                                                           //Number of workers to spawn
-    private JSONArray ports = new JSONArray();                                             //Array of all ports to listen on    
+    private JSONArray ports = new JSONArray();                                             //Array of all ports to listen on
     private HashMap<String, JSONArray> domainToPorts = new HashMap<String, JSONArray>();   //HashMap of domain to ports
     private String root = new String();                                                    //Root directory to search for files
     //private log_level: 0 = debug, 1 = info, 2 = warning, 3 = error, 4 = critical
@@ -27,7 +27,7 @@ class parseConfig {
             if(!config.has("domains")){
                 throw new JSONException("No key \"domains\" found in config file");
             }
-            
+
             this.units = config.getJSONArray("domains");
             //Sets up domain
             this.units.forEach(domainNode -> {
@@ -76,19 +76,18 @@ class parseConfig {
         return null;
     }
 
-    //If domain request on port is valid, return 1, else return -1
-    public int validateDomainPort(String id, int port){
+    public JSONObject validateDomainPort(String id, int port){
         JSONObject domain = this.validateDomain(id);
         if(domain == null){
-            return -2;
+            return null;
         }
         JSONArray listen = domain.getJSONArray("listen");
         for(int i = 0; i < listen.length(); i++){
             if(listen.getInt(i) == port){
-                return 1;
+                return domain;
             }
         }
-        return -1;
+        return null;
     }
 
     public JSONArray getServices(String id){
@@ -97,6 +96,27 @@ class parseConfig {
             return null;
         }
         return domain.getJSONArray("locations");
+    }
+
+    public boolean validateDirBlock(String id){
+        JSONObject domain = this.validateDomain(id);
+
+        if(domain.has("dirblock")){
+            return domain.getBoolean("dirblock");
+        }else{
+            return true;
+        }
+    }
+
+    private int getDefHelper(String id){
+        JSONObject domain = this.validateDomain(id);
+        return domain.getInt("default");
+    }
+
+    public JSONObject getDef(String id){
+        JSONArray services = this.getServices(id);
+        int key = this.getDefHelper(id);
+        return services.getJSONObject(key);
     }
 
     //returns the location information if valid
