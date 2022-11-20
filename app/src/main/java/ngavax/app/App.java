@@ -8,6 +8,36 @@ import java.util.*;
 
 
 public class App {
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////  SEMAPHORES FOR SYNCHRONIZATION OF THREADS  /////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    static Semaphore workers = new Semaphore(0);
+    static Semaphore sockets = new Semaphore(0);
+
+    static Socket currentSocket = new Socket();
+
+    static void notifyWorker(){
+        workers.release();
+    }
+
+    static void waitForSocket() throws InterruptedException{
+        workers.acquire();
+    }
+
+    static void notifySocket(){
+        sockets.release();
+    }
+
+    static void waitForWorker() throws InterruptedException{
+        sockets.acquire();
+    }
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
     public static void main(String[] args) throws Exception {
         //The file location is hard coded here
         //Program needs to read the command args and get the file location from there
