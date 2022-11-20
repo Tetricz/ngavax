@@ -50,7 +50,7 @@ class parseConfig {
             });
         } catch (JSONException e) {
             e.printStackTrace();
-            System.out.println(e);
+            LOG.error(e);
             System.exit(-1);
         }
     }
@@ -150,20 +150,20 @@ class parseConfig {
     public void printConfig(){
         this.units.forEach(domainNode -> {
             String id = ((JSONObject) domainNode).getString("id");
-            System.out.println("================Open=================");
-            System.out.println("Domain: " + id);
-            //System.out.println("    Listening on ports: " + getPorts());
-            System.out.println("    Listening for directories:");
+            LOG.info("================Open=================");
+            LOG.info("Domain: " + id);
+            //LOG.info("    Listening on ports: " + getPorts());
+            LOG.info("    Listening for directories:");
             for(int i = 0; i < getServices(id).length(); i++){
                 JSONObject service = getServices(id).getJSONObject(i);
                 //print a divider
-                System.out.println("        -----------------------------");
-                System.out.println("        Directory: " + service.getString("directory"));
-                System.out.println("        Type: " + getType(service));
-                System.out.println("        Serving: " + getServe(service));
-                System.out.println("        Autoindex: " + validateAutoIndex(service));
+                LOG.info("        -----------------------------");
+                LOG.info("        Directory: " + service.getString("directory"));
+                LOG.info("        Type: " + getType(service));
+                LOG.info("        Serving: " + getServe(service));
+                LOG.info("        Autoindex: " + validateAutoIndex(service));
             }
-            System.out.println("================Close================");
+            LOG.info("================Close================");
         });
     }
 }
