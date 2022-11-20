@@ -11,10 +11,12 @@ public class App {
     public static void main(String[] args) throws Exception {
         //The file location is hard coded here
         //Program needs to read the command args and get the file location from there
-        //print out args
-        System.out.println("Parameters: " + Arrays.toString(args));
+        LOG.info("Parameters: " + Arrays.toString(args));
+        LOG.toggleDebug();
+
         if(args.length == 0){
-            System.out.println("No file location provided \nUsage: java -jar ngavax.jar <file location>");
+            LOG.error("No file location provided");
+            LOG.warn("Usage: java -jar ngavax.jar <file location>");
             System.exit(-1);
         }
         try {
@@ -24,37 +26,34 @@ public class App {
 
             //Prints the config somewhat prettily
             //config.printConfig();
-            System.out.println((config.getPorts()));
+            LOG.info("Listening on ports: " + (config.getPorts()));
 
-            //JSONObject directory = config.validateDirectory("uhhh.edu", "/");
-            //System.out.println(config.getType(directory));
-            //System.out.println(config.getServe(directory));
-/*
-            socketListener listen = new socketListener(180);
-            listen.startServer();
-            System.out.println("Waiting for connections");
-            while(listen.isAlive()){
-                Thread.sleep(1000);
+            // Spawn threads to listen on each port
+            socketListener[] listen = new socketListener[config.getPorts().length()];
+            for(int i = 0; i < config.getPorts().length(); i++){
+                listen[i] = new socketListener(config.getPorts().getInt(i));
+                listen[i].start();
             }
             System.out.println("Closing connections");
             listen.stopServer();
 */
 
 
-        requestUndertow listen = new requestUndertow(80, config);
-        listen.start();
-        //proxyHandler proxy = new proxyHandler();
-        //String res = proxy.getUrlContents("http://localhost:8080");
-        //System.out.println(res);
-        //listen.stop();
+            // Spawn all worker threads
+            LOG.debug("Spawning " + (config.getWorkerCount() - listen.length) + " worker threads");
+            RequestHandler[] requestHandlers = new RequestHandler[config.getWorkerCount() - listen.length];
+            for(int i = 0; i < requestHandlers.length; i++){
+                requestHandlers[i] = new RequestHandler();
+                requestHandlers[i].start();
+            }
 
         } catch (FileNotFoundException e) {
             e.printStackTrace();
-            System.out.println("Error reading file, check path");
+            LOG.error("Error reading file, check path");
             System.exit(-1);
         } catch (JSONException e) {
             e.printStackTrace();
-            System.out.println("Error parsing config file, possible JSON syntax error");
+            LOG.error("Error parsing config file, possible JSON syntax error");
             System.exit(-1);
         }
 
