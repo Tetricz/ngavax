@@ -14,6 +14,7 @@ class LOG {
     public static final String ANSI_PURPLE = "\u001B[35m";
     public static final String ANSI_CYAN = "\u001B[36m";
     public static final String ANSI_WHITE = "\u001B[37m";
+    public static final String ANSI_ORANGE = "\u001B[38;5;208m";
 
 
     public static LOG getInstance(){
@@ -32,15 +33,20 @@ class LOG {
         System.out.println( ANSI_YELLOW + "Info:   " + ANSI_GREEN + msg);
     }
 
-    static public void error(Object o){
-        String msg = o.toString();
-        System.out.println( ANSI_RED + "Error:  " + ANSI_GREEN + msg);
-    }
-
     static public void debug(Object o){
         if(debug){
             String msg = o.toString();
             System.out.println( ANSI_BLUE + "Debug:  " + ANSI_GREEN + msg);
         }
+    }
+
+    static public void warn(Object o){
+        String msg = o.toString();
+        System.out.println( ANSI_ORANGE + "Warn:   " + ANSI_GREEN + msg);
+    }
+
+    static public void error(Object o){
+        String msg = o.toString();
+        System.out.println( ANSI_RED + "Error:  " + ANSI_GREEN + msg);
     }
 }
