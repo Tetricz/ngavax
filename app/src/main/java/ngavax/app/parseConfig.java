@@ -18,8 +18,8 @@ class parseConfig {
     //Constructor for parseConfig
     public parseConfig(JSONObject config) { //Move file reading to App.java instead and pass JSONObject here
         try {
-            if(config.has("workers")){
-                this.workerCount = config.getInt("workers");
+            if(config.has("worker_threads")){
+                this.workerCount = config.getInt("worker_threads");
             }
             if(config.has("root_dir")){
                 root = config.getString("root_dir");
