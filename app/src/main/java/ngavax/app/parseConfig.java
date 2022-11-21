@@ -135,9 +135,9 @@ class parseConfig {
         return ((JSONObject)directory).getString("type");
     }
 
-    public boolean validateAutoIndex(JSONObject directory){
-        if(directory.has("autoindex")){
-            return directory.getBoolean("autoindex");
+    public boolean validateAutoIndex(JSONObject domain){
+        if(domain.has("autoindex")){
+            return domain.getBoolean("autoindex");
         }else{
             return false;
         }

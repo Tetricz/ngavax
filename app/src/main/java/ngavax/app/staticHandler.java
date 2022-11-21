@@ -2,7 +2,7 @@ package ngavax.app;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.ByteBuffer;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -14,12 +14,40 @@ public class staticHandler {
         this.root_path = root;
     }
 
-    public String indexPath(String path){
+    public byte[] testIndex(String path){
+        String fullPath = this.root_path + path;
+        File index = new File(fullPath + "/index.html");
+        if(index.isFile()){
+            byte[] data = null;
+            try {
+                data = Files.readAllBytes(index.toPath());
+            } catch (IOException e) {
+                LOG.error(e);
+                e.printStackTrace();
+            }
+            return data;
+        }else{
+            return autoFileDir(path);
+        }
+    }
+
+    public byte[] autoFileDir(String path){
+        String fullPath = this.root_path + path;
+
+        File test = new File(fullPath);
+        if(test.isDirectory()){
+            return indexPath(path);
+        }else{
+            return getFile(path);
+        }
+    }
+
+    private byte[] indexPath(String path){
         String href = path;
-        path = this.root_path + path;
+        String fullPath = this.root_path + path;
 
         //System.out.println(path);
-        File dir = new File(path);
+        File dir = new File(fullPath);
         //String for html
         String htmlIndex = "<html>\n<head><title>Index</title></head>\n<body>\n<h1>Index</h1><hr><pre>\n<a href=\"" + "../" + "\">../</a>\n";
 
@@ -38,11 +66,20 @@ public class staticHandler {
         htmlIndex += htmlFil;
         htmlIndex += "</pre><hr></body>\n</html>";
 
-        return htmlIndex;
+        return htmlIndex.getBytes();
     }
 
-    public ByteBuffer getFile(String path) throws IOException {
+    private byte[] getFile(String path) {
         Path r = Paths.get(this.root_path + path);
-        return ByteBuffer.wrap(java.nio.file.Files.readAllBytes(r));
+        byte[] data = null;
+        if(Files.exists(r)){
+            try {
+                data = Files.readAllBytes(r);
+            } catch (IOException e) {
+                LOG.error(e);
+                e.printStackTrace();
+            }
+        }
+        return data;
     }
 }

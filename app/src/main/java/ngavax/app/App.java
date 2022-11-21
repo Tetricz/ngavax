@@ -4,10 +4,245 @@ package ngavax.app;
 
 import org.json.*;
 import java.io.*;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.*;
+import java.util.concurrent.Semaphore;
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////  Socket handler  ////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+class socketListener extends Thread{
+    private ServerSocket listener;
+    private boolean running = false;
+
+    socketListener(int port) {
+        try {
+            listener = new ServerSocket(port);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void stopListener(){
+        this.running = false;
+        this.interrupt();
+    }
+
+    @Override
+    public void run() {
+        this.running = true;
+        while (this.running) {
+            try {
+                Socket socket = listener.accept();
+                LOG.info("New connection from " + socket.getInetAddress().getHostAddress());
+
+                //Notify worker threads
+
+                App.currentSocket = socket;
+                LOG.debug("Notifying worker threads");
+                App.notifyWorker();
+                //System.out.println("Wait for worker to finish");
+                App.waitForWorker();
+
+            } catch (IOException | InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////  Request Handler  ////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+class RequestHandler extends Thread{
+    private Socket socket;
+    private boolean running = false;
+
+    private String HOST = new String();
+    private String METHOD = new String();
+    private String PATH = new String();
+    private int PORT = 0;
+
+    RequestHandler(){
+        LOG.info("Created thread: " + this.getId());
+    }
+
+    private void loadSocket(Socket socket){
+        this.socket = socket;
+    }
+
+    public void stopWorkers(){
+        this.running = false;
+        this.interrupt();
+    }
+
+    @Override
+    public void run()
+    {
+        try
+        {
+            this.running = true;
+            while (this.running) {
+                LOG.debug("Thread " + this.getId() + " is waiting");
+                App.waitForSocket();
+                loadSocket(App.currentSocket);
+                App.notifySocket();
+                LOG.debug("Request from " + socket.getPort());
+
+                // Read request Headers from client
+                BufferedReader in = new BufferedReader( new InputStreamReader( socket.getInputStream() ) );
+                // Character stream for Response Headers to client
+                PrintWriter out = new PrintWriter( socket.getOutputStream() );
+                // Get binary output stream to client (for requested data)
+                BufferedOutputStream dataOut = new BufferedOutputStream(socket.getOutputStream());
+
+
+                // Echo lines back to the client until the client closes the connection or we receive an empty line
+                StringBuilder HEADERS = new StringBuilder();
+
+                String line = in.readLine();
+                //out.println("Request Headers:");
+                //out.flush();
+                while( line != null && line.length() > 0 )
+                {
+                    HEADERS.append(line).append("\n");
+                    line = in.readLine();
+                }
+                //LOG.debug(HEADERS);
+
+                //byte[] data = HEADERS.toString().getBytes();
+                //int bytelength = data.length;
+
+                // Interpret HEADERS
+                String[] headerLines = HEADERS.toString().split("\n");
+                this.PORT = socket.getLocalPort();
+                LOG.debug("Port: " + this.PORT);
+                for (String key : headerLines) {
+                    //LOG.debug(key);
+                    if(key.contains("Host:")){
+                        LOG.debug(key);
+                        this.HOST = key.split(" ")[1];
+                    }
+                    if(key.contains("GET")){
+                        this.METHOD = "GET";
+                        this.PATH = key.split(" ")[1];
+                        LOG.debug("Method: " + this.METHOD + " Path: " + this.PATH);
+                    }
+                    else if(key.contains("POST")){
+                        this.METHOD = "POST";
+                        this.PATH = key.split(" ")[1];
+                    }
+                    else if(key.contains("PUT")){
+                        this.METHOD = "PUT";
+                        this.PATH = key.split(" ")[1];
+                    }
+                }
+
+                // Decision tree for what to do with request
+
+                LOG.debug("Checking validity of request");
+
+                staticHandler ss = new staticHandler(App.config.getRoot());
+                proxyHandler pp = new proxyHandler();
+
+                JSONObject domain = App.config.validateDomainPort(this.HOST, this.PORT);
+                if(domain != null){
+                    LOG.debug("Domain is valid");
+                    JSONObject dir = App.config.validateDirectory(this.HOST, this.PATH);
+                    byte[] data = null;
+                    if(dir != null){
+                        LOG.debug("Directory is valid");
+                        if(App.config.validateAutoIndex(domain)){
+                            LOG.debug("Autoindex is enabled");
+                            data = ss.autoFileDir(this.PATH);
+                        }
+
+                    }else{
+                        LOG.debug("Directory is not valid");
+                        // Check for autoindex
+                        // Check for dirblock
+                        if(App.config.validateAutoIndex(domain)){
+                            LOG.debug("Autoindex is enabled");
+                            // Send autoindex
+                            // Check if request is file or dir
+                            // Send autoindex dir or file
+                            data = ss.autoFileDir(this.PATH);
+                        }else if(App.config.validateDirBlock(this.HOST)){
+                            LOG.debug("Dirblock is enabled");
+                            LOG.warn("Request blocked, forbidden access");
+                            data = "403 - Forbidden".getBytes();
+                        }else{
+                            //if file, send file
+                            //if dir, check for index.html,
+                            //if index.html, send index.html
+                            //else send autoindex
+                        }
+                        if(data == null){
+                            data = "404 - Not Found".getBytes();
+                            sendResponseHeaders(out, data.length, status.NOT_FOUND);
+                            dataOut.write(data, 0, data.length);
+                            dataOut.flush();
+                        }else if(data == "403 - Forbidden".getBytes()){
+                            sendResponseHeaders(out, data.length, status.FORBIDDEN);
+                            dataOut.write(data, 0, data.length);
+                            dataOut.flush();
+                        }else{
+                            sendResponseHeaders(out, data.length);
+                            dataOut.write(data, 0, data.length);
+                            dataOut.flush();
+                        }
+                    }
+
+                }else{
+                    LOG.warn("Domain is not valid... BAD GATEWAY");
+                    byte[] data = "501 - Not implemented".getBytes();
+                    sendResponseHeaders(out, data.length, status.NOT_IMPLEMENTED);
+                    dataOut.write(data, 0, data.length);
+                    dataOut.flush();
+                }
+
+                // Close our connection
+                in.close();
+                out.close();
+                socket.close();
+                LOG.debug( "Connection closed" );
+            }
+        }
+        catch( Exception e )
+        {
+            e.printStackTrace();
+        }
+        finally{
+            try{
+                socket.close();
+            }catch (IOException e){
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private static void sendResponseHeaders(PrintWriter out, int bytelength, String s){
+        out.println( "HTTP/1.1 " + s);
+        out.println( "Server: NGAVAX" );
+        out.println( "Content-Length: " + bytelength );
+
+        out.println(); //blank line to end HEADERS
+        out.flush();
+    }
+    private static void sendResponseHeaders(PrintWriter out, int bytelength){
+        sendResponseHeaders(out, bytelength, status.OK);
+    }
+}
+
 
 
 public class App {
+
+    public static parseConfig config;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////  SEMAPHORES FOR SYNCHRONIZATION OF THREADS  /////////////////////////////////////
@@ -42,6 +277,7 @@ public class App {
         //The file location is hard coded here
         //Program needs to read the command args and get the file location from there
         LOG.info("Parameters: " + Arrays.toString(args));
+        LOG.warn("Amount of threads spawned, is determined by the amount of ports + specified amount of threads");
         LOG.toggleDebug();
 
         if(args.length == 0){
@@ -52,7 +288,7 @@ public class App {
         try {
             FileReader file_config = new FileReader(args[0]);
             JSONObject jsonText = new JSONObject(new JSONTokener(file_config));
-            parseConfig config = new parseConfig(jsonText);
+            config = new parseConfig(jsonText);
 
             //Prints the config somewhat prettily
             //config.printConfig();
@@ -64,14 +300,10 @@ public class App {
                 listen[i] = new socketListener(config.getPorts().getInt(i));
                 listen[i].start();
             }
-            System.out.println("Closing connections");
-            listen.stopServer();
-*/
 
-
+            LOG.info("Spawning " + ( (config.getWorkerCount() > 0) ? config.getWorkerCount() : 1 ) + " worker threads");
             // Spawn all worker threads
-            LOG.debug("Spawning " + (config.getWorkerCount() - listen.length) + " worker threads");
-            RequestHandler[] requestHandlers = new RequestHandler[config.getWorkerCount() - listen.length];
+            RequestHandler[] requestHandlers = new RequestHandler[ (config.getWorkerCount() > 0) ? config.getWorkerCount() : 1 ]; //If worker count is 0, spawn 1 thread
             for(int i = 0; i < requestHandlers.length; i++){
                 requestHandlers[i] = new RequestHandler();
                 requestHandlers[i].start();
@@ -85,31 +317,10 @@ public class App {
             e.printStackTrace();
             LOG.error("Error parsing config file, possible JSON syntax error");
             System.exit(-1);
+        } catch (Exception e){
+            e.printStackTrace();
+            LOG.error("Unknown error");
+            System.exit(-1);
         }
-
-        //https://www.geeksforgeeks.org/java-util-concurrent-package/
-        //https://www.geeksforgeeks.org/multithreading-in-java/
-
-        //proxyHander proxy = new proxyHander();
-        //proxy.start();
-
-        //staticHandler staticFiles = new staticHandler();
-        //staticFiles.start();
-
-    //This thread will become the request handler, thus no need to spawn another thread
-
-        //HEADERS are important
-        //When a client makes a request, the server will recieve a request, in teh request there will be HEADERS
-        //These headers will have a Host: field, this is what we will read to determine where the request gets passed to
-        //There is also a GET/POST/PUT/DELETE field, this is the directory field that you see in a URL.
-
-        //Example:
-        //GET /api HTTP/1.1
-        //Host: example.com
-        //There are also user-agents and other fun things in the HEADERS, but we will ignore those for the most part
-
-        //When looking at the Host, we should start at the back and work our way forward
-        //First match the .com, then the .example, then the www
-        //If at any point the domain is not correct, we should return a 404 error
     }
 }
