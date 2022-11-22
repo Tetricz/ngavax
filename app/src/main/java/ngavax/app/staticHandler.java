@@ -8,17 +8,10 @@ import java.nio.file.Paths;
 
 public class staticHandler {
 
-    private String root_path;
-
-    public staticHandler(String root) {
-        this.root_path = root;
-    }
-
     public byte[] testIndex(String path){
-        String fullPath = this.root_path + path;
-        File index = new File(fullPath + "/index.html");
+        File index = new File(path + "/index.html");
+        byte[] data = null;
         if(index.isFile()){
-            byte[] data = null;
             try {
                 data = Files.readAllBytes(index.toPath());
             } catch (IOException e) {
@@ -27,14 +20,12 @@ public class staticHandler {
             }
             return data;
         }else{
-            return autoFileDir(path);
+            return getFile(path);
         }
     }
 
     public byte[] autoFileDir(String path){
-        String fullPath = this.root_path + path;
-
-        File test = new File(fullPath);
+        File test = new File(path);
         if(test.isDirectory()){
             return indexPath(path);
         }else{
@@ -43,11 +34,8 @@ public class staticHandler {
     }
 
     private byte[] indexPath(String path){
-        String href = path;
-        String fullPath = this.root_path + path;
-
         //System.out.println(path);
-        File dir = new File(fullPath);
+        File dir = new File(path);
         //String for html
         String htmlIndex = "<html>\n<head><title>Index</title></head>\n<body>\n<h1>Index</h1><hr><pre>\n<a href=\"" + "../" + "\">../</a>\n";
 
@@ -57,9 +45,9 @@ public class staticHandler {
         String htmlDir = "";
         for(int i=0; i < contents.length; i++) {
             if(new File(path + contents[i]).isDirectory()){
-                htmlDir += "<a href=\"" + href + contents[i] + "/\">" + contents[i] + "</a>\n";
+                htmlDir += "<a href=\"" + contents[i] + "/\">" + contents[i] + "</a>\n";
             } else {
-                htmlFil += "<a href=\"" + href + contents[i] + "\">" + contents[i] + "</a>\n";
+                htmlFil += "<a href=\"" + contents[i] + "\">" + contents[i] + "</a>\n";
             }
         }
         htmlIndex += htmlDir;
@@ -69,8 +57,8 @@ public class staticHandler {
         return htmlIndex.getBytes();
     }
 
-    private byte[] getFile(String path) {
-        Path r = Paths.get(this.root_path + path);
+    public byte[] getFile(String path) {
+        Path r = Paths.get(path);
         byte[] data = null;
         if(Files.exists(r)){
             try {

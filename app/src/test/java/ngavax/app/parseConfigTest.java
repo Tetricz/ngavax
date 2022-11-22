@@ -44,23 +44,19 @@ public class parseConfigTest {
         assertEquals("/", config.getServices("example.com").getJSONObject(0).getString("directory"));
     }
 
-    @Test void getType(){
-        JSONObject obj = new JSONObject("{\"domains\":[{\"id\":\"example.com\",\"listen\":[80,443],\"locations\":[{\"directory\":\"/\",\"type\":\"static\",\"serve\":\"/var/www/html\"},{\"directory\":\"/api\",\"type\":\"proxy\",\"serve\":\"test.com:80\"}]}]}");
-        parseConfig config = new parseConfig(obj);
-        assertEquals("static", config.getType(config.validateDirectory("example.com", "/")));
-        assertEquals("proxy", config.getType(config.validateDirectory("example.com", "/api")));
-    }
-
     @Test void validateAutoIndex(){
         JSONObject obj = new JSONObject("{\"domains\":[{\"id\":\"example.com\",\"listen\":[80,443],\"locations\":[{\"directory\":\"/\",\"type\":\"static\",\"serve\":\"/var/www/html\"},{\"directory\":\"/api\",\"type\":\"proxy\",\"serve\":\"test.com:80\"}]}]}");
         parseConfig config = new parseConfig(obj);
         assertEquals(false, config.validateAutoIndex(config.validateDirectory("example.com", "/")));
     }
 
-    @Test void getServe(){
+    @Test void validateDirectory(){
         JSONObject obj = new JSONObject("{\"domains\":[{\"id\":\"example.com\",\"listen\":[80,443],\"locations\":[{\"directory\":\"/\",\"type\":\"static\",\"serve\":\"/var/www/html\"},{\"directory\":\"/api\",\"type\":\"proxy\",\"serve\":\"test.com:80\"}]}]}");
         parseConfig config = new parseConfig(obj);
-        assertEquals("/var/www/html", config.getServe(config.validateDirectory("example.com", "/")));
-        assertEquals("test.com:80", config.getServe(config.validateDirectory("example.com", "/api")));
+        System.out.println(config.validateDirectory("example.com", "/api/test"));
+        System.out.println(config.validateDirectory("example.com", "/ap/test"));
+        assertEquals("/", config.validateDirectory("example.com", "/ap/test").getString("directory"));
+        assertEquals("/api", config.validateDirectory("example.com", "/api/test").getString("directory"));
+        assertEquals("/", config.validateDirectory("example.com", "/notapi").getString("directory"));
     }
 }

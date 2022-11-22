@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class staticTests {
-    private staticHandler zap = new staticHandler(".");
+    private staticHandler zap = new staticHandler();
 //
 //    @Test void indexTest(){
 //        String actual = zap.indexPath("/");
