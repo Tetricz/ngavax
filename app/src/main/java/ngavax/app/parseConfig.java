@@ -123,16 +123,22 @@ class parseConfig {
     //returns null if invalid
     public JSONObject validateDirectory(String id, String directory){
         JSONArray services = this.getServices(id);
+        JSONObject res = null;
         for (Object service : services) {
             if(((JSONObject)service).getString("directory").equals(directory)){
                 return (JSONObject)service;
             }
+            if(directory.contains(((JSONObject)service).getString("directory"))){
+                //make sure it's the beginning of the string
+                if(((JSONObject)service).getString("directory").length() <= directory.length()){
+                    String test = directory.substring(0, (((JSONObject)service).getString("directory")).length());
+                    if(((JSONObject)service).getString("directory").equals(test)){
+                        res = (JSONObject)service;
+                    }
+                }
+            }
         }
-        return null;
-    }
-
-    public String getType(JSONObject directory){
-        return ((JSONObject)directory).getString("type");
+        return res;
     }
 
     public boolean validateAutoIndex(JSONObject domain){
@@ -141,10 +147,6 @@ class parseConfig {
         }else{
             return false;
         }
-    }
-
-    public String getServe(JSONObject directory){
-        return ((JSONObject)directory).getString("serve");
     }
 
     public void printConfig(){
@@ -159,8 +161,8 @@ class parseConfig {
                 //print a divider
                 LOG.info("        -----------------------------");
                 LOG.info("        Directory: " + service.getString("directory"));
-                LOG.info("        Type: " + getType(service));
-                LOG.info("        Serving: " + getServe(service));
+                LOG.info("        Type: " + service.getString("type"));
+                LOG.info("        Serving: " +  service.getString("serve"));
                 LOG.info("        Autoindex: " + validateAutoIndex(service));
             }
             LOG.info("================Close================");
