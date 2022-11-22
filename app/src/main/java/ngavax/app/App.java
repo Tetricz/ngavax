@@ -36,7 +36,7 @@ class socketListener extends Thread{
         while (this.running) {
             try {
                 Socket socket = listener.accept();
-                LOG.info("New connection from " + socket.getInetAddress().getHostAddress());
+                //LOG.info("New connection from " + socket.getRemoteSocketAddress());
 
                 //Notify worker threads
 
@@ -65,6 +65,7 @@ class RequestHandler extends Thread{
     private String HOST = new String();
     private String METHOD = new String();
     private String PATH = new String();
+    private String USERAGENT = new String();
     private int PORT = 0;
 
     RequestHandler(){
@@ -91,7 +92,10 @@ class RequestHandler extends Thread{
                 App.waitForSocket();
                 loadSocket(App.currentSocket);
                 App.notifySocket();
-                LOG.debug("Request from " + socket.getPort());
+                //LOG.debug("Request from " + socket.getPort());
+                String remoteAddress = socket.getRemoteSocketAddress().toString().split(":")[0].replace("/", "");;
+                LOG.info("Request from " + remoteAddress);
+
 
                 // Read request Headers from client
                 BufferedReader in = new BufferedReader( new InputStreamReader( socket.getInputStream() ) );
@@ -126,6 +130,10 @@ class RequestHandler extends Thread{
                     if(key.contains("Host:")){
                         LOG.debug(key);
                         this.HOST = key.split(" ")[1];
+                        if(this.HOST.contains(":")){
+                            this.HOST = this.HOST.split(":")[0];
+                        }
+                        this.HOST = this.HOST.toLowerCase();
                     }
                     if(key.contains("GET")){
                         this.METHOD = "GET";
@@ -140,69 +148,96 @@ class RequestHandler extends Thread{
                         this.METHOD = "PUT";
                         this.PATH = key.split(" ")[1];
                     }
+                    if(key.contains("User-Agent:")){
+                        this.USERAGENT = key;
+                    }
                 }
 
                 // Decision tree for what to do with request
 
                 LOG.debug("Checking validity of request");
-
-                staticHandler ss = new staticHandler(App.config.getRoot());
-                proxyHandler pp = new proxyHandler();
-
+                LOG.info(this.METHOD + " " + this.PATH + " " + this.HOST);
+                LOG.info(this.USERAGENT);
                 JSONObject domain = App.config.validateDomainPort(this.HOST, this.PORT);
-                if(domain != null){
-                    LOG.debug("Domain is valid");
-                    JSONObject dir = App.config.validateDirectory(this.HOST, this.PATH);
-                    byte[] data = null;
-                    if(dir != null){
-                        LOG.debug("Directory is valid");
-                        if(App.config.validateAutoIndex(domain)){
-                            LOG.debug("Autoindex is enabled");
-                            data = ss.autoFileDir(this.PATH);
-                        }
-
-                    }else{
-                        LOG.debug("Directory is not valid");
-                        // Check for autoindex
-                        // Check for dirblock
-                        if(App.config.validateAutoIndex(domain)){
-                            LOG.debug("Autoindex is enabled");
-                            // Send autoindex
-                            // Check if request is file or dir
-                            // Send autoindex dir or file
-                            data = ss.autoFileDir(this.PATH);
-                        }else if(App.config.validateDirBlock(this.HOST)){
-                            LOG.debug("Dirblock is enabled");
-                            LOG.warn("Request blocked, forbidden access");
-                            data = "403 - Forbidden".getBytes();
-                        }else{
-                            //if file, send file
-                            //if dir, check for index.html,
-                            //if index.html, send index.html
-                            //else send autoindex
-                        }
-                        if(data == null){
-                            data = "404 - Not Found".getBytes();
-                            sendResponseHeaders(out, data.length, status.NOT_FOUND);
-                            dataOut.write(data, 0, data.length);
-                            dataOut.flush();
-                        }else if(data == "403 - Forbidden".getBytes()){
-                            sendResponseHeaders(out, data.length, status.FORBIDDEN);
-                            dataOut.write(data, 0, data.length);
-                            dataOut.flush();
-                        }else{
-                            sendResponseHeaders(out, data.length);
-                            dataOut.write(data, 0, data.length);
-                            dataOut.flush();
-                        }
-                    }
-
-                }else{
-                    LOG.warn("Domain is not valid... BAD GATEWAY");
+                // Check if domain is valid
+                if(domain == null){
+                    LOG.warn("No domain found for " + this.HOST + ":" + this.PORT);
                     byte[] data = "501 - Not implemented".getBytes();
                     sendResponseHeaders(out, data.length, status.NOT_IMPLEMENTED);
                     dataOut.write(data, 0, data.length);
                     dataOut.flush();
+                }else{
+                    LOG.debug("Request is valid...");
+                    JSONObject dir = App.config.validateDirectory(this.HOST, this.PATH);
+                    byte[] data = null;
+                    // Check if directory/path is valid
+                    if(dir == null){
+                        data = "403 - Forbidden".getBytes();
+                    }else{
+                        // Check if autoindex is enabled
+                        if(App.config.validateAutoIndex(dir)){
+                            LOG.debug("Autoindex is enabled");
+                            data = App.ss.autoFileDir(dir.getString("serve") + this.PATH);
+                        }else if(!App.config.validateDirBlock(this.HOST)){
+                            switch (dir.getString("type")) {
+                                case "static":
+                                    LOG.debug("Static file");
+                                    LOG.debug(dir);
+                                    if(dir.getString("directory").equals(this.PATH))
+                                        data = App.ss.getFile(dir.getString("serve"));
+                                    else
+                                        data = App.ss.getFile(dir.getString("serve") + this.PATH);
+                                    break;
+                                case "proxy":
+                                    LOG.debug("Proxy");
+                                    if(dir.getString("directory").equals(this.PATH))
+                                        data = App.pp.proxyPass(dir.getString("serve"), App.pp.headerArray(HEADERS.toString(), remoteAddress));
+                                    else
+                                        data = App.pp.proxyPass(dir.getString("serve") + this.PATH, App.pp.headerArray(HEADERS.toString(), remoteAddress));
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }else{
+                            switch (dir.getString("type")) {
+                                case "static":
+                                    LOG.debug("Static file");
+                                    LOG.debug(dir);
+                                    if(dir.getString("directory").equals(this.PATH))
+                                        data = App.ss.getFile(dir.getString("serve"));
+                                    else
+                                        data = "403 - Forbidden".getBytes();
+                                    break;
+                                case "proxy":
+                                    LOG.debug("Proxy");
+                                    if(dir.getString("directory").equals(this.PATH))
+                                        data = App.pp.proxyPass(dir.getString("serve"), App.pp.headerArray(HEADERS.toString(), remoteAddress));
+                                    else
+                                        data = "403 - Forbidden".getBytes();
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }
+                    }
+                    if(data == null){
+                        data = "404 - Not Found".getBytes();
+                        sendResponseHeaders(out, data.length, status.NOT_FOUND);
+                        dataOut.write(data, 0, data.length);
+                        dataOut.flush();
+                    }else if(data == "403 - Forbidden".getBytes()){
+                        sendResponseHeaders(out, data.length, status.FORBIDDEN);
+                        dataOut.write(data, 0, data.length);
+                        dataOut.flush();
+                    }else if(data == "502 - Bad Gateway".getBytes()){
+                        sendResponseHeaders(out, data.length, status.BAD_GATEWAY);
+                        dataOut.write(data, 0, data.length);
+                        dataOut.flush();
+                    }else{
+                        sendResponseHeaders(out, data.length);
+                        dataOut.write(data, 0, data.length);
+                        dataOut.flush();
+                    }
                 }
 
                 // Close our connection
@@ -243,6 +278,8 @@ class RequestHandler extends Thread{
 public class App {
 
     public static parseConfig config;
+    public static staticHandler ss = new staticHandler();
+    public static proxyHandler pp = new proxyHandler();
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////  SEMAPHORES FOR SYNCHRONIZATION OF THREADS  /////////////////////////////////////
