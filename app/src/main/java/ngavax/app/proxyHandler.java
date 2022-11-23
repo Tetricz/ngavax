@@ -39,11 +39,10 @@ class proxyHandler{
             connection.setRequestMethod("GET");
 
             for (int i = 0; i < headerArr.size(); i+=2) {
-                LOG.info(headerArr.get(i) + ": " + headerArr.get(i+1));
+                //LOG.info(headerArr.get(i) + ": " + headerArr.get(i+1));
                 connection.setRequestProperty(headerArr.get(i), headerArr.get(i+1));
             }
-            //connection.setRequestProperty("User-Agent", "Mozilla/5.0");
-
+            
             int responseCode = connection.getResponseCode();
             if(responseCode == 200){
                 BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
