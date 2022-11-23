@@ -41,8 +41,6 @@ class socketListener extends Thread{
                 SocketExchange.setSocket(socket);
                 LOG.debug("Notifying worker threads");
                 App.notifyWorker();
-                App.waitOnOtherSockets();
-                App.notifySocket();
 
             } catch (IOException | InterruptedException e) {
                 e.printStackTrace();

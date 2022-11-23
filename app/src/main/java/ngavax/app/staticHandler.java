@@ -2,6 +2,9 @@ package ngavax.app;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -37,37 +40,45 @@ public class staticHandler {
         //System.out.println(path);
         File dir = new File(path);
         //String for html
-        String htmlIndex = "<html>\n<head><title>Index</title></head>\n<body>\n<h1>Index</h1><hr><pre>\n<a href=\"" + "../" + "\">../</a>\n";
+        StringBuilder htmlIndex = new StringBuilder("<html>\n<head><title>Index</title></head>\n<body>\n<h1>Index</h1><hr><pre>\n<a href=\"../\">../</a>\n");
 
         //List of all files and directories
         String contents[] = dir.list();
-        String htmlFil = "";
-        String htmlDir = "";
+        StringBuilder htmlFil = new StringBuilder();
+        StringBuilder htmlDir = new StringBuilder();
         for(int i=0; i < contents.length; i++) {
             if(new File(path + contents[i]).isDirectory()){
-                htmlDir += "<a href=\"" + contents[i] + "/\">" + contents[i] + "</a>\n";
+                htmlDir.append("<a href=\"" + contents[i] + "/\">" + contents[i] + "</a>\n");
             } else {
-                htmlFil += "<a href=\"" + contents[i] + "\">" + contents[i] + "</a>\n";
+                htmlFil.append("<a href=\"" + contents[i] + "\">" + contents[i] + "</a>\n");
             }
         }
-        htmlIndex += htmlDir;
-        htmlIndex += htmlFil;
-        htmlIndex += "</pre><hr></body>\n</html>";
+        htmlIndex.append(htmlDir);
+        htmlIndex.append(htmlFil);
+        htmlIndex.append("</pre><hr></body>\n</html>");
 
-        return htmlIndex.getBytes();
+        return htmlIndex.toString().getBytes();
     }
 
     public byte[] getFile(String path) {
-        Path r = Paths.get(path);
+
         byte[] data = null;
-        if(Files.exists(r)){
-            try {
-                data = Files.readAllBytes(r);
-            } catch (IOException e) {
-                LOG.error(e);
-                e.printStackTrace();
-            }
+        try(
+            RandomAccessFile aFile = new RandomAccessFile(path, "r");
+            FileChannel inChannel = aFile.getChannel();) {
+
+            long fileSize = inChannel.size();
+
+            //Create buffer of the file size
+            ByteBuffer buffer = ByteBuffer.allocate((int) fileSize);
+            inChannel.read(buffer);
+            buffer.flip();
+
+            data = buffer.array();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+
         return data;
     }
 }
