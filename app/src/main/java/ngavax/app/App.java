@@ -36,7 +36,6 @@ class socketListener extends Thread{
         while (this.running) {
             try {
                 Socket socket = listener.accept();
-                //LOG.info("New connection from " + socket.getRemoteSocketAddress());
 
                 App.waitOnOtherSockets();
                 SocketExchange.setSocket(socket);
@@ -44,8 +43,6 @@ class socketListener extends Thread{
                 App.notifyWorker();
                 App.waitOnOtherSockets();
                 App.notifySocket();
-                //System.out.println("Wait for worker to finish");
-                //
 
             } catch (IOException | InterruptedException e) {
                 e.printStackTrace();
@@ -97,7 +94,6 @@ class RequestHandler extends Thread{
                 String remoteAddress = socket.getRemoteSocketAddress().toString().split(":")[0].replace("/", "");;
                 LOG.info("Request from " + remoteAddress);
 
-
                 // Read request Headers from client
                 BufferedReader in = new BufferedReader( new InputStreamReader( socket.getInputStream() ) );
                 // Character stream for Response Headers to client
@@ -105,22 +101,13 @@ class RequestHandler extends Thread{
                 // Get binary output stream to client (for requested data)
                 BufferedOutputStream dataOut = new BufferedOutputStream(socket.getOutputStream());
 
-
-                // Echo lines back to the client until the client closes the connection or we receive an empty line
                 StringBuilder HEADERS = new StringBuilder();
-
                 String line = in.readLine();
-                //out.println("Request Headers:");
-                //out.flush();
                 while( line != null && line.length() > 0 )
                 {
                     HEADERS.append(line).append("\n");
                     line = in.readLine();
                 }
-                //LOG.debug(HEADERS);
-
-                //byte[] data = HEADERS.toString().getBytes();
-                //int bytelength = data.length;
 
                 // Interpret HEADERS
                 String[] headerLines = HEADERS.toString().split("\n");
@@ -155,7 +142,6 @@ class RequestHandler extends Thread{
                 }
 
                 // Decision tree for what to do with request
-
                 LOG.debug("Checking validity of request");
                 LOG.info(this.METHOD + " " + this.PATH + " " + this.HOST);
                 LOG.info(this.USERAGENT);
@@ -240,10 +226,10 @@ class RequestHandler extends Thread{
                         dataOut.flush();
                     }
                 }
-
                 // Close our connection
                 in.close();
                 out.close();
+                dataOut.close();
                 socket.close();
                 LOG.debug( "Connection closed" );
             }
@@ -315,7 +301,7 @@ public class App {
         //Program needs to read the command args and get the file location from there
         LOG.info("Parameters: " + Arrays.toString(args));
         LOG.warn("Amount of threads spawned, is determined by the amount of ports + specified amount of threads");
-        LOG.toggleDebug();
+        //LOG.toggleDebug();
 
         if(args.length == 0){
             LOG.error("No file location provided");
@@ -340,7 +326,8 @@ public class App {
 
             LOG.info("Spawning " + ( (config.getWorkerCount() > 0) ? config.getWorkerCount() : 1 ) + " worker threads");
             // Spawn all worker threads
-            RequestHandler[] requestHandlers = new RequestHandler[ (config.getWorkerCount() > 0) ? config.getWorkerCount() : 1 ]; //If worker count is 0, spawn 1 thread
+            // If worker count is 0, spawn 1 thread
+            RequestHandler[] requestHandlers = new RequestHandler[ (config.getWorkerCount() > 0) ? config.getWorkerCount() : 1 ];
             for(int i = 0; i < requestHandlers.length; i++){
                 requestHandlers[i] = new RequestHandler();
                 requestHandlers[i].start();
