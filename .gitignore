@@ -30,3 +30,6 @@ build
 
 # Ignore other vscode settings
 .vscode
+
+# Ignore test html folder
+html

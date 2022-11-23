@@ -1,63 +1,64 @@
 package ngavax.app;
 
-import java.net.*;
-import java.util.HashMap;
-import java.io.*;
-import org.json.*;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.ArrayList;
 
-public class proxyHandler {
 
-  public void getHTML(String URL) {
-    String output = getUrlContents(URL);
-    System.out.println(output);
-  }
+class proxyHandler{
 
-  public HashMap<String, String> modifyHeader(JSONObject settings, String HEADERS) {
-    //HEADERS = "GET / HTTP/3\nHost: www.tetricz.com\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:105.0) Gecko/201001\nAccept: text/css,*/*;q=0.1\nAccept-Language: en-US,en;q=0.5\nAccept-Encoding: gzip, deflate, br\nAlt-Used: www.tetricz.com\nConnection: keep-alive\nCookie: _ga=GA1.2.582144703.1664840968\nSec-Fetch-Dest: style\nSec-Fetch-Mode: no-cors\nSec-Fetch-Site: same-origin\nPragma: no-cache\nCache-Control: no-cache\nTE: trailers";
-    
-    String[] arrofHEADERS = HEADERS.split("\n");
+    public ArrayList<String> headerArray(String HEADERS, String xReal){
+        ArrayList<String> hl = new ArrayList<String>();
+        String[] lines = HEADERS.split("\n");
+        String xHost = "";
+        for (String line : lines) {
+            if(!line.contains("GET"))
+                if(line.contains("Host: ")){
+                    xHost = line.split(": ")[1];
+                }else{
+                    hl.add(line.split(":")[0]);
+                    hl.add(line.split(":")[1]);
+                }
+        }
+        hl.add("X-Forwarded-Proto");
+        hl.add("http");
+        hl.add("X-Forwarded-Host");
+        hl.add(xHost);
+        hl.add("X-Real-IP");
+        hl.add(xReal);
 
-    HashMap<String, String> modheaders = new HashMap<String, String>();
-
-    modheaders.put(null, arrofHEADERS[0]);
-    for (int i = 1; i < arrofHEADERS.length; i++) {
-      String[] header = arrofHEADERS[i].split(": ");
-      modheaders.put(header[0], header[1]);
+        return hl;
     }
 
-    modheaders.remove("Host");
-    modheaders.put("Host", settings.getString("serve"));
+    public byte[] proxyPass(String address, ArrayList<String> headerArr){
+        try {
+            URL url = new URL(address);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("GET");
 
-    modheaders.remove(null);
-    modheaders.put(null, "GET " + settings.getString("directory"));
+            for (int i = 0; i < headerArr.size(); i+=2) {
+                //LOG.info(headerArr.get(i) + ": " + headerArr.get(i+1));
+                connection.setRequestProperty(headerArr.get(i), headerArr.get(i+1));
+            }
 
-    modheaders.remove("Alt-Used");
-    modheaders.put("Alt-Used", settings.getString("serve"));
-
-    return modheaders;
-  }
-
-  
-
-  public String getUrlContents(String theUrl) {
-    StringBuilder content = new StringBuilder();
-    // Use try and catch to avoid the exceptions
-    try {
-      URL url = new URL(theUrl); // creating a url object
-      URLConnection urlConnection = url.openConnection(); // creating a urlconnection object
-
-      // wrapping the urlconnection in a bufferedreader
-      BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
-      String line;
-      // reading from the urlconnection using the bufferedreader
-      while ((line = bufferedReader.readLine()) != null) {
-        content.append(line + "\n");
-      }
-      bufferedReader.close();
-      
-    } catch (Exception e) {
-      e.printStackTrace();
+            int responseCode = connection.getResponseCode();
+            if(responseCode == 200){
+                BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                String inputLine;
+                StringBuilder response = new StringBuilder();
+                while ((inputLine = in.readLine()) != null) {
+                    response.append(inputLine);
+                }
+                in.close();
+                return response.toString().getBytes();
+            }else{
+                return ("502 - Bad Gateway").getBytes();
+            }
+        } catch (Exception e) {
+            LOG.error(e);
+            return ("502 - Bad Gateway").getBytes();
+        }
     }
-    return content.toString();
-  }
 }

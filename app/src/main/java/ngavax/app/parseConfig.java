@@ -4,12 +4,12 @@ package ngavax.app;
 import org.json.*;
 import java.util.*;
 
-
+//This should be converted to a singleton, too bad I wrote it before I knew that.
 
 class parseConfig {
     private JSONArray units;
     private int workerCount = 0;                                                           //Number of workers to spawn
-    private JSONArray ports = new JSONArray();                                             //Array of all ports to listen on    
+    private JSONArray ports = new JSONArray();                                             //Array of all ports to listen on
     private HashMap<String, JSONArray> domainToPorts = new HashMap<String, JSONArray>();   //HashMap of domain to ports
     private String root = new String();                                                    //Root directory to search for files
     //private log_level: 0 = debug, 1 = info, 2 = warning, 3 = error, 4 = critical
@@ -18,8 +18,8 @@ class parseConfig {
     //Constructor for parseConfig
     public parseConfig(JSONObject config) { //Move file reading to App.java instead and pass JSONObject here
         try {
-            if(config.has("workers")){
-                this.workerCount = config.getInt("workers");
+            if(config.has("worker_threads")){
+                this.workerCount = config.getInt("worker_threads");
             }
             if(config.has("root_dir")){
                 root = config.getString("root_dir");
@@ -27,7 +27,7 @@ class parseConfig {
             if(!config.has("domains")){
                 throw new JSONException("No key \"domains\" found in config file");
             }
-            
+
             this.units = config.getJSONArray("domains");
             //Sets up domain
             this.units.forEach(domainNode -> {
@@ -50,7 +50,7 @@ class parseConfig {
             });
         } catch (JSONException e) {
             e.printStackTrace();
-            System.out.println(e);
+            LOG.error(e);
             System.exit(-1);
         }
     }
@@ -76,19 +76,18 @@ class parseConfig {
         return null;
     }
 
-    //If domain request on port is valid, return 1, else return -1
-    public int validateDomainPort(String id, int port){
+    public JSONObject validateDomainPort(String id, int port){
         JSONObject domain = this.validateDomain(id);
         if(domain == null){
-            return -2;
+            return null;
         }
         JSONArray listen = domain.getJSONArray("listen");
         for(int i = 0; i < listen.length(); i++){
             if(listen.getInt(i) == port){
-                return 1;
+                return domain;
             }
         }
-        return -1;
+        return null;
     }
 
     public JSONArray getServices(String id){
@@ -99,51 +98,74 @@ class parseConfig {
         return domain.getJSONArray("locations");
     }
 
+    public boolean validateDirBlock(String id){
+        JSONObject domain = this.validateDomain(id);
+
+        if(domain.has("dirblock")){
+            return domain.getBoolean("dirblock");
+        }else{
+            return true;
+        }
+    }
+
+    private int getDefHelper(String id){
+        JSONObject domain = this.validateDomain(id);
+        return domain.getInt("default");
+    }
+
+    public JSONObject getDef(String id){
+        JSONArray services = this.getServices(id);
+        int key = this.getDefHelper(id);
+        return services.getJSONObject(key);
+    }
+
     //returns the location information if valid
     //returns null if invalid
     public JSONObject validateDirectory(String id, String directory){
         JSONArray services = this.getServices(id);
+        JSONObject res = null;
         for (Object service : services) {
             if(((JSONObject)service).getString("directory").equals(directory)){
                 return (JSONObject)service;
             }
+            if(directory.contains(((JSONObject)service).getString("directory"))){
+                //make sure it's the beginning of the string
+                if(((JSONObject)service).getString("directory").length() <= directory.length()){
+                    String test = directory.substring(0, (((JSONObject)service).getString("directory")).length());
+                    if(((JSONObject)service).getString("directory").equals(test)){
+                        res = (JSONObject)service;
+                    }
+                }
+            }
         }
-        return null;
+        return res;
     }
 
-    public String getType(JSONObject directory){
-        return ((JSONObject)directory).getString("type");
-    }
-
-    public boolean validateAutoIndex(JSONObject directory){
-        if(directory.has("autoindex")){
-            return directory.getBoolean("autoindex");
+    public boolean validateAutoIndex(JSONObject domain){
+        if(domain.has("autoindex")){
+            return domain.getBoolean("autoindex");
         }else{
             return false;
         }
     }
 
-    public String getServe(JSONObject directory){
-        return ((JSONObject)directory).getString("serve");
-    }
-
     public void printConfig(){
         this.units.forEach(domainNode -> {
             String id = ((JSONObject) domainNode).getString("id");
-            System.out.println("================Open=================");
-            System.out.println("Domain: " + id);
-            //System.out.println("    Listening on ports: " + getPorts());
-            System.out.println("    Listening for directories:");
+            LOG.info("================Open=================");
+            LOG.info("Domain: " + id);
+            //LOG.info("    Listening on ports: " + getPorts());
+            LOG.info("    Listening for directories:");
             for(int i = 0; i < getServices(id).length(); i++){
                 JSONObject service = getServices(id).getJSONObject(i);
                 //print a divider
-                System.out.println("        -----------------------------");
-                System.out.println("        Directory: " + service.getString("directory"));
-                System.out.println("        Type: " + getType(service));
-                System.out.println("        Serving: " + getServe(service));
-                System.out.println("        Autoindex: " + validateAutoIndex(service));
+                LOG.info("        -----------------------------");
+                LOG.info("        Directory: " + service.getString("directory"));
+                LOG.info("        Type: " + service.getString("type"));
+                LOG.info("        Serving: " +  service.getString("serve"));
+                LOG.info("        Autoindex: " + validateAutoIndex(service));
             }
-            System.out.println("================Close================");
+            LOG.info("================Close================");
         });
     }
 }

@@ -2,7 +2,6 @@
     "worker_threads": 4,
     "log_level": "info",
     "log_file": "/var/log/ngavax.log",
-    "root_dir": "/home/ngavax/",
     "domains": [
         {
             "id": "4353.uh.edu",
@@ -10,11 +9,23 @@
                 80,
                 443
             ],
+            "dirblock": false,
             "locations": [
                 {
                     "directory": "/",
+                    "type": "static",
+                    "serve": "/ngavax/html/",
+                    "autoindex": true
+                },
+                {
+                    "directory": "/image",
+                    "type": "static",
+                    "serve": "/ngavax/html/IMG_0062.jpg"
+                },
+                {
+                    "directory": "/helloweb/",
                     "type": "proxy",
-                    "serve": "http://localserver.tld:80"
+                    "serve": "http://localhost:8080/"
                 }
             ]
         },
@@ -24,11 +35,12 @@
                 80,
                 443
             ],
+            "dirblock": true,
             "locations": [
                 {
-                    "directory": "/banana",
-                    "type": "static",
-                    "serve": "/home/ngavax/html/banana.html"
+                    "directory": "/",
+                    "type": "proxy",
+                    "serve": "http://localhost:8080"
                 }
             ]
         },
@@ -38,11 +50,12 @@
                 80,
                 443
             ],
+            "dirblock": false,
             "locations": [
                 {
                     "directory": "/",
                     "type": "static",
-                    "serve": "/home/uh.edu/html/404.html"
+                    "serve": "/html/404.html"
                 }
             ]
         },
@@ -52,6 +65,7 @@
                 80,
                 443
             ],
+            "dirblock": false,
             "locations": [
                 {
                     "directory": "/",
@@ -59,7 +73,7 @@
                     "serve": "/home/uh.edu/html/"
                 },
                 {
-                    "directory": "/ftp",
+                    "directory": "/ftp/",
                     "type": "static",
                     "serve": "/home/uh.edu/ftp/",
                     "autoindex": true
