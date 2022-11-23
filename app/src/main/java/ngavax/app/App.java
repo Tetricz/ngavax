@@ -313,6 +313,7 @@ public class App {
 
             //Prints the config somewhat prettily
             //config.printConfig();
+
             LOG.info("Listening on ports: " + (config.getPorts()));
 
             // Spawn threads to listen on each port
