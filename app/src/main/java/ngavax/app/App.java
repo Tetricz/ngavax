@@ -38,13 +38,14 @@ class socketListener extends Thread{
                 Socket socket = listener.accept();
                 //LOG.info("New connection from " + socket.getRemoteSocketAddress());
 
-                //Notify worker threads
-
-                App.currentSocket = socket;
+                App.waitOnOtherSockets();
+                SocketExchange.setSocket(socket);
                 LOG.debug("Notifying worker threads");
                 App.notifyWorker();
+                App.waitOnOtherSockets();
+                App.notifySocket();
                 //System.out.println("Wait for worker to finish");
-                App.waitForWorker();
+                //
 
             } catch (IOException | InterruptedException e) {
                 e.printStackTrace();
@@ -90,7 +91,7 @@ class RequestHandler extends Thread{
             while (this.running) {
                 LOG.debug("Thread " + this.getId() + " is waiting");
                 App.waitForSocket();
-                loadSocket(App.currentSocket);
+                loadSocket(SocketExchange.getSocket());
                 App.notifySocket();
                 //LOG.debug("Request from " + socket.getPort());
                 String remoteAddress = socket.getRemoteSocketAddress().toString().split(":")[0].replace("/", "");;
@@ -274,7 +275,6 @@ class RequestHandler extends Thread{
 }
 
 
-
 public class App {
 
     public static parseConfig config;
@@ -286,9 +286,9 @@ public class App {
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     static Semaphore workers = new Semaphore(0);
-    static Semaphore sockets = new Semaphore(0);
+    static Semaphore sockets = new Semaphore(1);
 
-    static Socket currentSocket = new Socket();
+    //static Socket currentSocket = new Socket();
 
     static void notifyWorker(){
         workers.release();
@@ -302,7 +302,7 @@ public class App {
         sockets.release();
     }
 
-    static void waitForWorker() throws InterruptedException{
+    static void waitOnOtherSockets() throws InterruptedException{
         sockets.acquire();
     }
 
