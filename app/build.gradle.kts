@@ -12,9 +12,7 @@ repositories {
 }
 
 dependencies {
-    implementation("org.apache.commons:commons-text")
     implementation("org.json:json:20220924")
-    implementation("org.slf4j:slf4j-api:2.0.3")
 }
 
 tasks.register("RunConfig", JavaExec::class) {
@@ -26,6 +24,16 @@ tasks.register("RunConfig", JavaExec::class) {
     //This is where you can add arguments to the application
     //This is the location of the config file for me
     args = listOf("config_example.json")
+}
+
+tasks.jar {
+    manifest.attributes["Main-Class"] = "ngavax.app.App"
+    val dependencies = configurations
+        .runtimeClasspath
+        .get()
+        .map(::zipTree) // OR .map { zipTree(it) }
+    from(dependencies)
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
 application {
