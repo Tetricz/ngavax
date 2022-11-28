@@ -6,22 +6,17 @@ import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class staticHandler {
 
-    public byte[] testIndex(String path){
-        File index = new File(path + "/index.html");
-        byte[] data = null;
-        if(index.isFile()){
-            try {
-                data = Files.readAllBytes(index.toPath());
-            } catch (IOException e) {
-                LOG.error(e);
-                e.printStackTrace();
-            }
-            return data;
-        }else{
+    public byte[] testFile(String path){
+        final Path index = Paths.get(path);
+        if(Files.isRegularFile(index)){
             return getFile(path);
+        }else{
+            return getFile(path + "/index.html");
         }
     }
 
@@ -59,24 +54,29 @@ public class staticHandler {
     }
 
     public byte[] getFile(String path) {
-
+        final Path testPath = Paths.get(path);
         byte[] data = null;
-        try(
-            RandomAccessFile aFile = new RandomAccessFile(path, "r");
-            FileChannel inChannel = aFile.getChannel();) {
+        if(Files.isRegularFile(testPath)){
+            try(
+                RandomAccessFile aFile = new RandomAccessFile(path, "r");
+                FileChannel inChannel = aFile.getChannel();
+                ) {
 
-            long fileSize = inChannel.size();
+                long fileSize = inChannel.size();
 
-            //Create buffer of the file size
-            ByteBuffer buffer = ByteBuffer.allocate((int) fileSize);
-            inChannel.read(buffer);
-            buffer.flip();
+                //Create buffer of the file size
+                ByteBuffer buffer = ByteBuffer.allocate((int) fileSize);
+                inChannel.read(buffer);
+                buffer.flip();
 
-            data = buffer.array();
-        } catch (IOException e) {
-            e.printStackTrace();
+                data = buffer.array();
+            } catch (IOException e) {
+                LOG.error("Error reading file: " + path);
+                e.printStackTrace();
+            }
+        }else{
+            LOG.warn("File not found: " + path);
         }
-
         return data;
     }
 }

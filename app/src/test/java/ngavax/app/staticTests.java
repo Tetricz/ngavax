@@ -24,4 +24,12 @@ public class staticTests {
 //</html>""";
 //        assertEquals(expected, actual);
 //    }
+
+    @Test void testFileTest(){
+        String path = "C:/github/ngavax/www/";
+        byte[] actual = zap.testFile(path);
+        for(int i=0; i < actual.length; i++){
+            System.out.print((char)actual[i]);
+        }
+    }
 }

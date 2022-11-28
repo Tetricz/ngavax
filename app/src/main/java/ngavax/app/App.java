@@ -169,9 +169,9 @@ class RequestHandler extends Thread{
                                     LOG.debug("Static file");
                                     LOG.debug(dir);
                                     if(dir.getString("directory").equals(this.PATH))
-                                        data = App.ss.getFile(dir.getString("serve"));
+                                        data = App.ss.testFile(dir.getString("serve"));
                                     else
-                                        data = App.ss.getFile(dir.getString("serve") + this.PATH);
+                                        data = App.ss.testFile(dir.getString("serve") + this.PATH);
                                     break;
                                 case "proxy":
                                     LOG.debug("Proxy");
@@ -189,7 +189,7 @@ class RequestHandler extends Thread{
                                     LOG.debug("Static file");
                                     LOG.debug(dir);
                                     if(dir.getString("directory").equals(this.PATH))
-                                        data = App.ss.getFile(dir.getString("serve"));
+                                        data = App.ss.testFile(dir.getString("serve"));
                                     else
                                         data = "403 - Forbidden".getBytes();
                                     break;
