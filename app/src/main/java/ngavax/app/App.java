@@ -162,7 +162,12 @@ class RequestHandler extends Thread{
                         // Check if autoindex is enabled
                         if(App.config.validateAutoIndex(dir)){
                             LOG.debug("Autoindex is enabled");
-                            data = App.ss.autoFileDir(dir.getString("serve") + this.PATH);
+                            if(dir.getString("directory").equals(this.PATH))
+                                data = App.ss.autoFileDir(dir.getString("serve"));
+                            else{
+                                String aiPath = dir.getString("serve") + this.PATH.replace(dir.getString("directory"), "");
+                                data = App.ss.autoFileDir(aiPath);
+                            }
                         }else if(!App.config.validateDirBlock(this.HOST)){
                             switch (dir.getString("type")) {
                                 case "static":
@@ -210,11 +215,11 @@ class RequestHandler extends Thread{
                         sendResponseHeaders(out, data.length, status.NOT_FOUND);
                         dataOut.write(data, 0, data.length);
                         dataOut.flush();
-                    }else if(data == "403 - Forbidden".getBytes()){
+                    }else if(Arrays.equals(data, "403 - Forbidden".getBytes())){
                         sendResponseHeaders(out, data.length, status.FORBIDDEN);
                         dataOut.write(data, 0, data.length);
                         dataOut.flush();
-                    }else if(data == "502 - Bad Gateway".getBytes()){
+                    }else if(Arrays.equals(data, "502 - Bad Gateway".getBytes())){
                         sendResponseHeaders(out, data.length, status.BAD_GATEWAY);
                         dataOut.write(data, 0, data.length);
                         dataOut.flush();

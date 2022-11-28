@@ -12,17 +12,23 @@ import java.nio.file.Paths;
 public class staticHandler {
 
     public byte[] testFile(String path){
-        final Path index = Paths.get(path);
-        if(Files.isRegularFile(index)){
+        final Path initialPath = Paths.get(path);
+        if(Files.isRegularFile(initialPath)){
+            LOG.debug(initialPath);
             return getFile(path);
         }else{
-            return getFile(path + "/index.html");
+            final Path indexPath = Paths.get(path + "index.html");
+            if(Files.isRegularFile(indexPath)){
+                LOG.debug(indexPath);
+                return getFile(path + "index.html");
+            }
         }
+        return null;
     }
 
     public byte[] autoFileDir(String path){
-        File test = new File(path);
-        if(test.isDirectory()){
+        final Path test = Paths.get(path);
+        if(Files.isDirectory(test)){
             return indexPath(path);
         }else{
             return getFile(path);

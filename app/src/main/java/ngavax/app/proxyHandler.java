@@ -54,11 +54,11 @@ class proxyHandler{
                 in.close();
                 return response.toString().getBytes();
             }else{
-                return ("502 - Bad Gateway").getBytes();
+                return "502 - Bad Gateway".getBytes();
             }
         } catch (Exception e) {
             LOG.error(e);
-            return ("502 - Bad Gateway").getBytes();
+            return "502 - Bad Gateway".getBytes();
         }
     }
 }
